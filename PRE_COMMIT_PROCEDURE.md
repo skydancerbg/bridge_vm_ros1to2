@@ -2,6 +2,9 @@
 
 Use this procedure before making a Git commit in this repo:
 
+For Codex usage, prefer the repo-local skill:
+- `Use the bridge-precommit-commit skill. Refresh the mirror from live state, verify the bridge runtime, update mirrored docs/manifests, stage the relevant files, and if everything is verified ready, commit with the standard post-fix message.`
+
 1. Pull current live files into the repo mirror.
    - Run `./scripts/snapshot_from_live.sh`
 
@@ -26,7 +29,7 @@ Use this procedure before making a Git commit in this repo:
    - Review `CURRENT_STAGE.md`
 
 7. Make a commit with a meaningful message that describes the actual bridge-side change.
-   - Example: `git commit -am "Mirror rosbridge topic advertiser and refresh manifests"`
+   - Preferred current command: `cd /home/swu/bridge-vm-config-repo && git -c safe.directory=/home/swu/bridge-vm-config-repo commit -m "Update mirrored bridge docs and manifests for working post-fix state"`
 
 8. If the commit captured changes that need to be restored later, note the relevant restore and restart procedure.
    - Use `./scripts/restore_to_live.sh`

@@ -8,6 +8,10 @@ This procedure is for the **bridge VM only**.
 
 The repository is a **mirror of scattered live system files**. Live files remain in their real OS locations on the OS. The repo stores mirrored copies, manifests, documentation, and restore information.
 
+For Codex usage, prefer the repo-local skill:
+
+`Use the bridge-precommit-commit skill. Refresh the mirror from live state, verify the bridge runtime, update mirrored docs/manifests, stage the relevant files, and if everything is verified ready, commit with the standard post-fix message.`
+
 ---
 
 ## Current authoritative baseline
@@ -137,7 +141,13 @@ Confirm that manifests reflect owner / group / mode changes and note whether the
 ### 8) Stage the changes
 
 ```bash
-git add .
+git add AGENTS.md PROJECT_STATUS.md CURRENT_STAGE.md MANIFEST/services_manifest.yaml \
+  live-files/home/swu/bridge-docs/AGENTS.md \
+  live-files/home/swu/bridge-docs/PROJECT_STATUS.md \
+  live-files/home/swu/bridge-docs/CURRENT_STAGE.md \
+  bridge_vm_pre_commit_procedure.md \
+  PRE_COMMIT_PROCEDURE.md \
+  .codex/skills/bridge-precommit-commit/SKILL.md
 ```
 
 ### 9) Commit with a precise message
@@ -194,8 +204,7 @@ systemctl status ros-map-export.service --no-pager -l
 Useful runtime checks:
 
 ```bash
-source /opt/ros/humble/setup.bash
-ros2 topic echo /robot/robotnik_base_control/odom --once
+env -i HOME=/home/swu USER=swu LOGNAME=swu PATH=/usr/sbin:/usr/bin:/sbin:/bin sudo -u swu /bin/bash -lc "source /opt/ros/foxy/setup.bash; ros2 topic info /robot/robotnik_base_control/odom"
 curl http://127.0.0.1:8081/map_meta.json
 journalctl -u rosbridge-websocket.service -f
 ```
