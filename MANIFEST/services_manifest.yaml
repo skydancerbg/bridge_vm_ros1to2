@@ -1,12 +1,13 @@
 [
   {
     "service_name": "ros1-dynamic-bridge.service",
-    "purpose": "Runs ros1_bridge dynamic_bridge to forward ROS 1 topics from 10.25.25.115:11311 into ROS 2.",
+    "purpose": "Runs ros1_bridge dynamic_bridge to forward ROS 1 topics from 10.25.25.115:11311 into ROS 2 under the authoritative split-service architecture.",
     "related_files": [
       "/etc/systemd/system/ros1-dynamic-bridge.service"
     ],
     "verification_commands": [
       "systemctl status ros1-dynamic-bridge.service --no-pager -l",
+      "ps -ef | grep dynamic_bridge | grep -v grep",
       "env -i HOME=/home/swu USER=swu LOGNAME=swu PATH=/usr/sbin:/usr/bin:/sbin:/bin sudo -u swu /bin/bash -lc \"source /opt/ros/foxy/setup.bash; ros2 topic list -t\""
     ],
     "restart_commands": [
@@ -15,13 +16,14 @@
   },
   {
     "service_name": "rosbridge-websocket.service",
-    "purpose": "Exposes ROS 2 topics to websocket clients on ws://10.25.25.107:9090.",
+    "purpose": "Exposes ROS 2 topics to websocket clients on ws://10.25.25.107:9090 and must be the only intended owner of port 9090.",
     "related_files": [
       "/etc/systemd/system/rosbridge-websocket.service"
     ],
     "verification_commands": [
       "systemctl status rosbridge-websocket.service --no-pager -l",
       "ss -ltnp | grep 9090",
+      "ps -ef | grep rosbridge | grep -v grep",
       "journalctl -u rosbridge-websocket.service --no-pager -l | tail -n 40"
     ],
     "restart_commands": [
@@ -59,5 +61,18 @@
     "restart_commands": [
       "sudo systemctl restart ros-map-export.service"
     ]
+  },
+  {
+    "service_name": "ros-bridge.service",
+    "purpose": "Legacy combined bridge service name retained only as a masked guardrail; it must remain non-authoritative.",
+    "related_files": [
+      "/etc/systemd/system/ros-bridge.service",
+      "/etc/systemd/system/ros-bridge.service.legacy-disabled"
+    ],
+    "verification_commands": [
+      "systemctl is-enabled ros-bridge.service",
+      "systemctl status ros-bridge.service --no-pager -l || true"
+    ],
+    "restart_commands": []
   }
 ]

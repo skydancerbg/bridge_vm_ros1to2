@@ -1,10 +1,10 @@
 # CURRENT STAGE
 
 ## Current Stage
-- Bridge VM is in stabilization stage for full-map export and split bridge services.
+- Bridge VM is in post-fix stabilization stage with working split bridge services and recovered UI robot motion.
 
 ## Goal Of This Stage
-- Keep the bridge services stable, documented, and resumable while confirming reliable frontend-consumable pose delivery.
+- Keep the current working bridge state documented, reproducible, and protected against recurrence of rogue runtime ownership.
 
 ## Done In Previous Stages
 - Implemented and verified `ros-map-export.service`.
@@ -12,13 +12,12 @@
 - Completed bridge-side map cropping against the real ROS occupancy grid, then rolled that change back to restore full-map export behavior.
 - Retired the old combined `ros-bridge.service` runtime approach.
 - Split the bridge into `ros1-dynamic-bridge.service` and `rosbridge-websocket.service`.
-- Verified live ROS 2 and websocket delivery for `/robot/robotnik_base_control/odom`.
+- Removed rogue unmanaged bridge runtime ownership, restarted the managed bridge services, and verified live ROS 2 and websocket delivery for `/robot/robotnik_base_control/odom`.
 
 ## In Scope Now
-- Bridge-side verification of frontend-consumed pose topics under the split service architecture.
-- Documentation and sync hygiene for clean resume.
-- Ensuring frontend consumers use the current full-map metadata from the exporter.
-- Careful service-level checks using `systemctl`, socket inspection, ROS topic inspection, and websocket subscription tests.
+- Documentation and sync hygiene for the now-working post-fix bridge state.
+- Commit preparation and mirrored-file consistency.
+- Light operational guardrails that keep the legacy combined bridge path non-authoritative.
 
 ## Out Of Scope Now
 - Redesigning the bridge architecture.
@@ -26,12 +25,12 @@
 - Frontend redesign or unrelated application changes.
 
 ## Next Stages
-- Re-check live `/robot/amcl_pose` behavior when upstream AMCL is actively updating.
-- Decide whether frontend should temporarily prefer `/robot/robotnik_base_control/odom` if AMCL remains sparse.
-- Keep frontend map consumption aligned with current exported metadata rather than cached cropped-map assumptions.
-- Continue bridge-side verification only as needed to support frontend data flow.
+- Re-check live `/robot/amcl_pose` behavior only if frontend requirements change.
+- Keep using `/robot/robotnik_base_control/odom` as the primary bridge-health topic.
+- Preserve the first-response troubleshooting rule before editing service files.
+- Commit and preserve the current working mirror state.
 
 ## Risks / Watchouts
 - Reverting the ROS 2-only rosbridge subprocess isolation can break DDS discovery again.
-- Mixed ROS environment handling in `/usr/local/bin/bridge_startup.sh` is sensitive.
-- Upstream ROS 1 publish behavior can make a bridge look unhealthy even when service wiring is correct.
+- Allowing a legacy or unmanaged bridge process to reclaim port `9090` can recreate the previous failure mode.
+- Upstream ROS 1 publish behavior can still make AMCL appear stale even when odom is healthy.
