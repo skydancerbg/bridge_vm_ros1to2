@@ -1,0 +1,14 @@
+[Unit]
+Description=Dedicated ROS 1 to ROS 2 Bridge Appliance
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=swu
+ExecStart=/usr/local/bin/bridge_startup.sh
+Restart=always
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target

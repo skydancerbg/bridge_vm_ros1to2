@@ -1,0 +1,63 @@
+[
+  {
+    "service_name": "ros1-dynamic-bridge.service",
+    "purpose": "Runs ros1_bridge dynamic_bridge to forward ROS 1 topics from 10.25.25.115:11311 into ROS 2.",
+    "related_files": [
+      "/etc/systemd/system/ros1-dynamic-bridge.service"
+    ],
+    "verification_commands": [
+      "systemctl status ros1-dynamic-bridge.service --no-pager -l",
+      "env -i HOME=/home/swu USER=swu LOGNAME=swu PATH=/usr/sbin:/usr/bin:/sbin:/bin sudo -u swu /bin/bash -lc \"source /opt/ros/foxy/setup.bash; ros2 topic list -t\""
+    ],
+    "restart_commands": [
+      "sudo systemctl restart ros1-dynamic-bridge.service"
+    ]
+  },
+  {
+    "service_name": "rosbridge-websocket.service",
+    "purpose": "Exposes ROS 2 topics to websocket clients on ws://10.25.25.107:9090.",
+    "related_files": [
+      "/etc/systemd/system/rosbridge-websocket.service"
+    ],
+    "verification_commands": [
+      "systemctl status rosbridge-websocket.service --no-pager -l",
+      "ss -ltnp | grep 9090",
+      "journalctl -u rosbridge-websocket.service --no-pager -l | tail -n 40"
+    ],
+    "restart_commands": [
+      "sudo systemctl restart rosbridge-websocket.service"
+    ]
+  },
+  {
+    "service_name": "rosbridge-topic-advertiser.service",
+    "purpose": "Advertises browser-consumed topic names and types into the ROS 2 graph so rosbridge can resolve untyped subscribe requests.",
+    "related_files": [
+      "/etc/systemd/system/rosbridge-topic-advertiser.service",
+      "/home/swu/bridge_support/ros2_topic_advertiser.py"
+    ],
+    "verification_commands": [
+      "systemctl status rosbridge-topic-advertiser.service --no-pager -l",
+      "env -i HOME=/home/swu USER=swu LOGNAME=swu PATH=/usr/sbin:/usr/bin:/sbin:/bin sudo -u swu /bin/bash -lc \"source /opt/ros/foxy/setup.bash; ros2 topic list -t | egrep '/robot/amcl_pose|/robot/robotnik_base_control/odom'\""
+    ],
+    "restart_commands": [
+      "sudo systemctl restart rosbridge-topic-advertiser.service",
+      "sudo systemctl restart rosbridge-websocket.service"
+    ]
+  },
+  {
+    "service_name": "ros-map-export.service",
+    "purpose": "Serves the browser-facing static map export and metadata on http://10.25.25.107:8081/.",
+    "related_files": [
+      "/etc/systemd/system/ros-map-export.service",
+      "/home/swu/map_exporter/app.py",
+      "/home/swu/map_exporter/run.sh"
+    ],
+    "verification_commands": [
+      "systemctl status ros-map-export.service --no-pager -l",
+      "curl -sS http://127.0.0.1:8081/map_meta.json"
+    ],
+    "restart_commands": [
+      "sudo systemctl restart ros-map-export.service"
+    ]
+  }
+]

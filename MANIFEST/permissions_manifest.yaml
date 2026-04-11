@@ -1,0 +1,68 @@
+[
+  {
+    "live_path": "/etc/systemd/system/ros1-dynamic-bridge.service",
+    "owner": "root",
+    "group": "root",
+    "mode": "644"
+  },
+  {
+    "live_path": "/etc/systemd/system/rosbridge-websocket.service",
+    "owner": "root",
+    "group": "root",
+    "mode": "644"
+  },
+  {
+    "live_path": "/etc/systemd/system/rosbridge-topic-advertiser.service",
+    "owner": "root",
+    "group": "root",
+    "mode": "644"
+  },
+  {
+    "live_path": "/etc/systemd/system/ros-map-export.service",
+    "owner": "root",
+    "group": "root",
+    "mode": "644"
+  },
+  {
+    "live_path": "/usr/local/bin/bridge_startup.sh",
+    "owner": "root",
+    "group": "root",
+    "mode": "755"
+  },
+  {
+    "live_path": "/home/swu/map_exporter/app.py",
+    "owner": "swu",
+    "group": "swu",
+    "mode": "775"
+  },
+  {
+    "live_path": "/home/swu/map_exporter/run.sh",
+    "owner": "swu",
+    "group": "swu",
+    "mode": "775"
+  },
+  {
+    "live_path": "/home/swu/bridge-docs/AGENTS.md",
+    "owner": "root",
+    "group": "root",
+    "mode": "644"
+  },
+  {
+    "live_path": "/home/swu/bridge-docs/PROJECT_STATUS.md",
+    "owner": "root",
+    "group": "root",
+    "mode": "644"
+  },
+  {
+    "live_path": "/home/swu/bridge-docs/CURRENT_STAGE.md",
+    "owner": "root",
+    "group": "root",
+    "mode": "644"
+  },
+  {
+    "live_path": "/home/swu/bridge_support/ros2_topic_advertiser.py",
+    "owner": "root",
+    "group": "root",
+    "mode": "644"
+  }
+]

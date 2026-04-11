@@ -1,0 +1,8 @@
+backup_timestamp=20260411_012649
+/etc/systemd/system/ros1-dynamic-bridge.service -> /home/swu/bridge-backups/remote_delivery_trace/backup_20260411_012649/etc/systemd/system/ros1-dynamic-bridge.service
+/etc/systemd/system/rosbridge-websocket.service -> /home/swu/bridge-backups/remote_delivery_trace/backup_20260411_012649/etc/systemd/system/rosbridge-websocket.service
+/etc/systemd/system/ros-map-export.service -> /home/swu/bridge-backups/remote_delivery_trace/backup_20260411_012649/etc/systemd/system/ros-map-export.service
+/home/swu/bridge-docs/AGENTS.md -> /home/swu/bridge-backups/remote_delivery_trace/backup_20260411_012649/home/swu/bridge-docs/AGENTS.md
+/home/swu/bridge-docs/PROJECT_STATUS.md -> /home/swu/bridge-backups/remote_delivery_trace/backup_20260411_012649/home/swu/bridge-docs/PROJECT_STATUS.md
+/home/swu/bridge-docs/CURRENT_STAGE.md -> /home/swu/bridge-backups/remote_delivery_trace/backup_20260411_012649/home/swu/bridge-docs/CURRENT_STAGE.md
+/usr/local/bin/bridge_startup.sh -> /home/swu/bridge-backups/remote_delivery_trace/backup_20260411_012649/usr/local/bin/bridge_startup.sh

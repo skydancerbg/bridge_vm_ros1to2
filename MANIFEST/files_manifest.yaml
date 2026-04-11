@@ -1,0 +1,57 @@
+[
+  {
+    "repo_path": "live-files/etc/systemd/system/ros1-dynamic-bridge.service",
+    "live_path": "/etc/systemd/system/ros1-dynamic-bridge.service",
+    "description": "Systemd unit for the ROS 1 to ROS 2 dynamic bridge."
+  },
+  {
+    "repo_path": "live-files/etc/systemd/system/rosbridge-websocket.service",
+    "live_path": "/etc/systemd/system/rosbridge-websocket.service",
+    "description": "Systemd unit for rosbridge websocket exposure on port 9090."
+  },
+  {
+    "repo_path": "live-files/etc/systemd/system/rosbridge-topic-advertiser.service",
+    "live_path": "/etc/systemd/system/rosbridge-topic-advertiser.service",
+    "description": "Systemd unit for the ROS 2 topic advertiser helper used by rosbridge type inference."
+  },
+  {
+    "repo_path": "live-files/etc/systemd/system/ros-map-export.service",
+    "live_path": "/etc/systemd/system/ros-map-export.service",
+    "description": "Systemd unit for static map export on port 8081."
+  },
+  {
+    "repo_path": "live-files/usr/local/bin/bridge_startup.sh",
+    "live_path": "/usr/local/bin/bridge_startup.sh",
+    "description": "Legacy combined bridge startup wrapper retained for reference and rollback use."
+  },
+  {
+    "repo_path": "live-files/home/swu/map_exporter/app.py",
+    "live_path": "/home/swu/map_exporter/app.py",
+    "description": "Map exporter application logic."
+  },
+  {
+    "repo_path": "live-files/home/swu/map_exporter/run.sh",
+    "live_path": "/home/swu/map_exporter/run.sh",
+    "description": "Map exporter launcher script."
+  },
+  {
+    "repo_path": "live-files/home/swu/bridge-docs/AGENTS.md",
+    "live_path": "/home/swu/bridge-docs/AGENTS.md",
+    "description": "Bridge VM responsibility and guardrail notes."
+  },
+  {
+    "repo_path": "live-files/home/swu/bridge-docs/PROJECT_STATUS.md",
+    "live_path": "/home/swu/bridge-docs/PROJECT_STATUS.md",
+    "description": "Current bridge VM working status and endpoint summary."
+  },
+  {
+    "repo_path": "live-files/home/swu/bridge-docs/CURRENT_STAGE.md",
+    "live_path": "/home/swu/bridge-docs/CURRENT_STAGE.md",
+    "description": "Current bridge stage, scope, and next steps."
+  },
+  {
+    "repo_path": "live-files/home/swu/bridge_support/ros2_topic_advertiser.py",
+    "live_path": "/home/swu/bridge_support/ros2_topic_advertiser.py",
+    "description": "ROS 2 helper that advertises browser-consumed topics for rosbridge type inference."
+  }
+]

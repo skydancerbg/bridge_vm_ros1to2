@@ -1,0 +1,11 @@
+backup_timestamp: 20260410_230818
+/usr/local/bin/bridge_startup.sh -> /usr/local/bin/bridge_startup.sh
+/etc/systemd/system/ros-bridge.service -> /etc/systemd/system/ros-bridge.service
+/etc/systemd/system/ros1-dynamic-bridge.service -> /etc/systemd/system/ros1-dynamic-bridge.service
+/etc/systemd/system/rosbridge-websocket.service -> /etc/systemd/system/rosbridge-websocket.service
+/etc/systemd/system/ros-map-export.service -> /etc/systemd/system/ros-map-export.service
+/home/swu/map_exporter/app.py -> /home/swu/map_exporter/app.py
+/home/swu/map_exporter/run.sh -> /home/swu/map_exporter/run.sh
+/home/swu/bridge-docs/AGENTS.md -> /home/swu/bridge-docs/AGENTS.md
+/home/swu/bridge-docs/PROJECT_STATUS.md -> /home/swu/bridge-docs/PROJECT_STATUS.md
+/home/swu/bridge-docs/CURRENT_STAGE.md -> /home/swu/bridge-docs/CURRENT_STAGE.md

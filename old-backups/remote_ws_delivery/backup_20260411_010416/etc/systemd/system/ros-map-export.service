@@ -1,0 +1,15 @@
+[Unit]
+Description=ROS 1 Static Map HTTP Export Service
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=swu
+WorkingDirectory=/home/swu/map_exporter
+ExecStart=/home/swu/map_exporter/run.sh
+Restart=always
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target
