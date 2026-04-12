@@ -31,7 +31,6 @@
 - Websocket endpoint: `ws://10.25.25.107:9090`
 - Static map PNG: `http://10.25.25.107:8081/map.png`
 - Static map metadata: `http://10.25.25.107:8081/map_meta.json`
-- `ros-map-export.service` now crops the real ROS occupancy grid to the meaningful non-unknown area with a safety margin before publishing the PNG and metadata.
 - Frontend-consumed topics currently include `/robot/amcl_pose` and `/robot/robotnik_base_control/odom`
 
 ## Must Not Break
@@ -46,6 +45,11 @@
 - Verify `ros1-dynamic-bridge.service` and `rosbridge-websocket.service` separately with `systemctl status`.
 - Verify websocket binding with `ss -ltnp | grep 9090`.
 - Verify `ros-map-export.service` with `systemctl status` and HTTP fetches on port `8081`.
-- Frontend must consume current map metadata dynamically because exported map dimensions and origin now reflect cropped content.
+- Map export is back on the full map extent; current metadata is `4992 x 4992` with the full-map origin.
 - Treat the split bridge services as authoritative; `ros-bridge.service` is retired.
 - If frontend pose delivery is questioned, compare `/robot/amcl_pose` with `/robot/robotnik_base_control/odom`.
+- The current watchdog policy only restarts `ros1-dynamic-bridge.service` when ROS 1 odom publisher visibility is missing and ROS 2 bridged odom is also unhealthy for 3 consecutive checks.
+- Bridge-side repeatable nav testing lives in `scripts/capture_nav_goals_ros1.py`, `scripts/run_nav_goal_test_ros1.py`, `scripts/run_nav_goal_test.sh`, `scripts/cancel_nav_goal_test.sh`, and `scripts/nav_goal_test_status.sh`.
+- Passwordless SSH from this VM to the sim VM is confirmed for `swu@10.25.25.115` and `root@10.25.25.115`.
+- The confirmed remote sim restart entrypoint is `/home/swu/restart_neo_workshop_navigation.sh` on `10.25.25.115`.
+- The previous sim terminal can remain hung after a restart; clear it with `Ctrl-C` or close/kill that terminal before assuming the restart path is broken.

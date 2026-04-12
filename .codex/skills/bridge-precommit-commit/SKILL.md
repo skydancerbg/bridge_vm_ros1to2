@@ -52,8 +52,12 @@ Use this skill when working in `/home/swu/bridge-vm-config-repo` on bridge-side 
   - `8081` owned by map exporter
   - `/robot/robotnik_base_control/odom` is live
   - typed websocket subscribe receives odom publish frames
+  - major watchdog-driven bridge collapses are fixed
+  - measured odom continuity is down to about `0.30 s` max gap with zero gaps over `0.5 s` in the validated run
   - robot is visible and moving in the UI
 - `AMCL` was not required for the successful fix.
+- Bridge-side repeatable nav-goal capture and status-driven run helpers now exist under `scripts/`.
+- Remote sim-control/testing helpers and SSH workflow must remain documented.
 - No rollback is needed.
 - First-response troubleshooting rule:
   - `ps -ef | grep dynamic_bridge`

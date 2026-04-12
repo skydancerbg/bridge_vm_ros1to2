@@ -54,6 +54,15 @@ The following is the currently validated working state and should be reflected i
   - `/robot/robotnik_base_control/odom` is live
   - typed websocket subscribe receives odom publish frames
   - the robot is visible and moving in the UI
+- Watchdog policy now preserves bridge continuity during navigation:
+  - ROS 1 publisher absence alone does **not** force restart
+  - restart now requires ROS 1 publisher missing **and** unhealthy ROS 2 bridged odom for **3 consecutive checks**
+- Repeatable bridge-side testing helpers now exist for:
+  - RViz 2D Nav Goal capture
+  - status-driven 4-goal nav runs
+  - active-goal cancel
+  - current nav-test status
+- Remote sim-control workflow is documented and must remain preserved.
 - `AMCL` was **not required** for the successful fix
 - No rollback is needed
 

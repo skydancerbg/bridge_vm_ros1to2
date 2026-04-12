@@ -27,6 +27,7 @@ For Codex usage, prefer the repo-local skill:
    - Review `AGENTS.md`
    - Review `PROJECT_STATUS.md`
    - Review `CURRENT_STAGE.md`
+   - Keep the current watchdog policy, repeatable nav-goal helpers, and remote sim-control workflow reflected accurately.
 
 7. Make a commit with a meaningful message that describes the actual bridge-side change.
    - Preferred current command: `cd /home/swu/bridge-vm-config-repo && git -c safe.directory=/home/swu/bridge-vm-config-repo commit -m "Update mirrored bridge docs and manifests for working post-fix state"`

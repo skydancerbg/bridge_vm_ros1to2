@@ -7,7 +7,7 @@ Wants=network-online.target
 Type=simple
 User=swu
 WorkingDirectory=/home/swu
-ExecStart=/bin/bash -lc 'export ROS_MASTER_URI=http://10.25.25.115:11311; export ROS_IP=10.25.25.107; export ROS_LOCALHOST_ONLY=0; unset ROS_HOSTNAME; set +u; source /opt/ros/noetic/setup.bash; source /opt/ros/foxy/setup.bash; set -u; exec ros2 run ros1_bridge dynamic_bridge --bridge-all-topics'
+ExecStart=/usr/local/bin/ros1_dynamic_bridge_watchdog.sh
 Restart=always
 RestartSec=5
 

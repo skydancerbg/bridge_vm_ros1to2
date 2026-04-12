@@ -25,6 +25,11 @@
     "description": "Legacy combined bridge startup wrapper retained for reference and rollback use."
   },
   {
+    "repo_path": "live-files/usr/local/bin/ros1_dynamic_bridge_watchdog.sh",
+    "live_path": "/usr/local/bin/ros1_dynamic_bridge_watchdog.sh",
+    "description": "Watchdog wrapper for the split dynamic bridge that forces a clean systemd restart when ROS 1 odom disappears or stops recovering into ROS 2."
+  },
+  {
     "repo_path": "live-files/home/swu/map_exporter/app.py",
     "live_path": "/home/swu/map_exporter/app.py",
     "description": "Map exporter application logic."

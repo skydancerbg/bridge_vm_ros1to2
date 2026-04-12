@@ -1,14 +1,16 @@
 [
   {
     "service_name": "ros1-dynamic-bridge.service",
-    "purpose": "Runs ros1_bridge dynamic_bridge to forward ROS 1 topics from 10.25.25.115:11311 into ROS 2 under the authoritative split-service architecture.",
+    "purpose": "Runs ros1_bridge dynamic_bridge through a watchdog wrapper so the split bridge recovers cleanly when the upstream ROS 1 master or odom path disappears and later returns.",
     "related_files": [
-      "/etc/systemd/system/ros1-dynamic-bridge.service"
+      "/etc/systemd/system/ros1-dynamic-bridge.service",
+      "/usr/local/bin/ros1_dynamic_bridge_watchdog.sh"
     ],
     "verification_commands": [
       "systemctl status ros1-dynamic-bridge.service --no-pager -l",
       "ps -ef | grep dynamic_bridge | grep -v grep",
-      "env -i HOME=/home/swu USER=swu LOGNAME=swu PATH=/usr/sbin:/usr/bin:/sbin:/bin sudo -u swu /bin/bash -lc \"source /opt/ros/foxy/setup.bash; ros2 topic list -t\""
+      "journalctl -u ros1-dynamic-bridge.service -n 80 --no-pager -l",
+      "env -i HOME=/home/swu USER=swu LOGNAME=swu PATH=/usr/sbin:/usr/bin:/sbin:/bin sudo -u swu /bin/bash -lc \"source /opt/ros/foxy/setup.bash; python3 - <<'PY'\nimport rclpy\nfrom rclpy.node import Node\nfrom nav_msgs.msg import Odometry\nclass Probe(Node):\n    def __init__(self):\n        super().__init__('manifest_probe')\n        self.count = 0\n        self.create_subscription(Odometry, '/robot/robotnik_base_control/odom', self.cb, 10)\n    def cb(self, _msg):\n        self.count += 1\nrclpy.init(); node = Probe()\nfor _ in range(10):\n    rclpy.spin_once(node, timeout_sec=0.5)\nprint(node.count)\nnode.destroy_node(); rclpy.shutdown()\nPY\""
     ],
     "restart_commands": [
       "sudo systemctl restart ros1-dynamic-bridge.service"

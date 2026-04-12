@@ -30,6 +30,12 @@
     "mode": "755"
   },
   {
+    "live_path": "/usr/local/bin/ros1_dynamic_bridge_watchdog.sh",
+    "owner": "root",
+    "group": "root",
+    "mode": "755"
+  },
+  {
     "live_path": "/home/swu/map_exporter/app.py",
     "owner": "swu",
     "group": "swu",

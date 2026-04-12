@@ -3,6 +3,8 @@ set -euo pipefail
 
 systemctl status ros1-dynamic-bridge.service --no-pager -l | sed -n '1,20p'
 printf '\n---\n'
+ps -ef | grep dynamic_bridge | grep -v grep || true
+printf '\n---\n'
 systemctl status rosbridge-websocket.service --no-pager -l | sed -n '1,20p'
 printf '\n---\n'
 systemctl status rosbridge-topic-advertiser.service --no-pager -l | sed -n '1,20p'
