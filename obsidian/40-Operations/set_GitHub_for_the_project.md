@@ -1,6 +1,6 @@
 # set_GitHub_for_the_project
 
-## Current Situation
+## Current Working Setup
 
 The super repo is:
 
@@ -8,33 +8,50 @@ The super repo is:
 /home/swu/bridge-vm-config-repo
 ```
 
-GitHub remote:
-
-```text
-https://github.com/skydancerbg/bridge_vm_ros1to2.git
-```
-
-The current non-interactive agent session cannot push over HTTPS because no GitHub credentials are available to it. SSH also fails unless this VM key is added to GitHub:
-
-```text
-git@github.com: Permission denied (publickey)
-```
-
-## Option 1: Use SSH Deploy/User Key
-
-Add this public key to GitHub as a deploy key or user SSH key:
-
-```bash
-/home/swu/.ssh/id_rsa.pub
-```
-
-Repository:
+GitHub repository:
 
 ```text
 skydancerbg/bridge_vm_ros1to2
 ```
 
-Then run:
+The deploy key is now installed and SSH authentication works from this bridge VM.
+
+Verified command:
+
+```bash
+ssh -o BatchMode=yes -T git@github.com
+```
+
+Expected successful output:
+
+```text
+Hi skydancerbg/bridge_vm_ros1to2! You've successfully authenticated, but GitHub does not provide shell access.
+```
+
+Current Git remote is SSH:
+
+```text
+origin git@github.com:skydancerbg/bridge_vm_ros1to2.git
+```
+
+## Push Command
+
+Use:
+
+```bash
+cd /home/swu/bridge-vm-config-repo
+git push origin main
+```
+
+Successful no-op output when already current:
+
+```text
+Everything up-to-date
+```
+
+## If Remote Is Accidentally Reset To HTTPS
+
+Restore SSH remote:
 
 ```bash
 cd /home/swu/bridge-vm-config-repo
@@ -42,12 +59,13 @@ git remote set-url origin git@github.com:skydancerbg/bridge_vm_ros1to2.git
 git push origin main
 ```
 
-## Option 2: Use HTTPS Credentials Or Token
+## Original Fallback: HTTPS Token
 
-Configure GitHub HTTPS credentials/token and run:
+If SSH stops working, configure GitHub HTTPS credentials/token and run:
 
 ```bash
 cd /home/swu/bridge-vm-config-repo
+git remote set-url origin https://github.com/skydancerbg/bridge_vm_ros1to2.git
 git push origin main
 ```
 
@@ -64,10 +82,12 @@ git remote -v
 git log --oneline -5
 ```
 
-Expected after successful push:
+Expected when clean and pushed:
 
 ```text
 ## main...origin/main
+origin  git@github.com:skydancerbg/bridge_vm_ros1to2.git (fetch)
+origin  git@github.com:skydancerbg/bridge_vm_ros1to2.git (push)
 ```
 
 No `ahead` marker should remain.

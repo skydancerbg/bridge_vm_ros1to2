@@ -219,6 +219,14 @@ Use pattern:
 4. Review `git diff` in `/home/swu/bridge-vm-config-repo`.
 5. Commit from the super repo if the change is valid.
 
+GitHub:
+- Repository: `skydancerbg/bridge_vm_ros1to2`
+- SSH remote: `git@github.com:skydancerbg/bridge_vm_ros1to2.git`
+- Deploy-key SSH auth is working from this bridge VM.
+- Verify with `ssh -o BatchMode=yes -T git@github.com`.
+- Push with `cd /home/swu/bridge-vm-config-repo && git push origin main`.
+- See `/home/swu/obsidian/40-Operations/set_GitHub_for_the_project.md`.
+
 ## Main Project Folders
 
 | Path | Purpose |

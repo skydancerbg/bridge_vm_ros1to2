@@ -10,6 +10,8 @@ Current state:
 - Legacy `ros-bridge.service` is masked/retired and should remain non-authoritative.
 - ROS 1 master at `http://10.25.25.115:11311` was reachable again on `2026-07-04`.
 - `curl http://127.0.0.1:8081/refresh` succeeded on `2026-07-04`.
+- GitHub deploy-key SSH auth works for `skydancerbg/bridge_vm_ros1to2`.
+- Git remote `origin` uses `git@github.com:skydancerbg/bridge_vm_ros1to2.git`.
 
 Working HTTP checks:
 - `curl http://127.0.0.1:8081/` returns service metadata.
@@ -56,3 +58,7 @@ Known constraint:
 - On `2026-07-03`, `ROS_MASTER_URI=http://10.25.25.115:11311` was unreachable from this VM.
 - On `2026-07-04`, the user started the simulation/ROS master on the sim VM and `/robot/static_map` was reachable again from the bridge VM.
 - Confirmed sim start command on `10.25.25.115`: `cd ~/catkin_ws && source /opt/ros/noetic/setup.bash && source ~/catkin_ws/devel/setup.bash && roslaunch rb1_base_gazebo rb1_neo_workshop_navigation.launch`
+
+GitHub status:
+- SSH auth test succeeds with `ssh -o BatchMode=yes -T git@github.com`.
+- Push command is `cd /home/swu/bridge-vm-config-repo && git push origin main`.
