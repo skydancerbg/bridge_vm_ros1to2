@@ -62,7 +62,7 @@ The metadata currently served by the map exporter:
 ## Related Notes
 
 - [[20-Infrastructure/Machines and Access]]
-- [[20-Infrastructure/Web App VM 10.10.25.113]]
+- [[20-Infrastructure/Web App VM 10.25.25.113]]
 - [[30-Services/ros-map-export.service]]
 - [[30-Services/ros1-dynamic-bridge.service]]
 - [[40-Operations/Verification Commands]]

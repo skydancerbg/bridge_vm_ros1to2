@@ -15,7 +15,7 @@ ssh-keygen -t ed25519 -a 100 -f $Key -C "bridge-project-new-vm" -N ""
 ```powershell
 Get-Content "$Key.pub" | ssh swu@10.25.25.107 "mkdir -p ~/.ssh && chmod 700 ~/.ssh && cat >> ~/.ssh/authorized_keys && chmod 600 ~/.ssh/authorized_keys"
 Get-Content "$Key.pub" | ssh swu@10.25.25.115 "mkdir -p ~/.ssh && chmod 700 ~/.ssh && cat >> ~/.ssh/authorized_keys && chmod 600 ~/.ssh/authorized_keys"
-Get-Content "$Key.pub" | ssh swu@10.10.25.113 "mkdir -p ~/.ssh && chmod 700 ~/.ssh && cat >> ~/.ssh/authorized_keys && chmod 600 ~/.ssh/authorized_keys"
+Get-Content "$Key.pub" | ssh user@10.25.25.113 "mkdir -p ~/.ssh && chmod 700 ~/.ssh && cat >> ~/.ssh/authorized_keys && chmod 600 ~/.ssh/authorized_keys"
 ```
 
 ## Install Key For Root Access Where Needed
@@ -41,7 +41,7 @@ Get-Content "$Key.pub" | ssh swu@10.25.25.107 "sudo mkdir -p /root/.ssh && sudo 
 ```powershell
 ssh -i $Key swu@10.25.25.107 "hostname && sudo -n true && echo sudo-ok"
 ssh -i $Key swu@10.25.25.115 "hostname"
-ssh -i $Key swu@10.10.25.113 "hostname && sudo -n true && echo sudo-ok"
+ssh -i $Key user@10.25.25.113 "hostname && sudo -n true && echo sudo-ok"
 ssh -i $Key root@10.25.25.115 "hostname"
 ssh -i $Key root@10.25.25.107 "hostname"
 ```
@@ -71,7 +71,7 @@ Host sim-vm-root
   IdentityFile $Key
 
 Host robcogadget-web
-  HostName 10.10.25.113
+  HostName 10.25.25.113
   User swu
   IdentityFile $Key
 "@ | Add-Content "$env:USERPROFILE\.ssh\config"

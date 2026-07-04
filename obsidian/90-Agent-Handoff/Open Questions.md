@@ -34,4 +34,4 @@ Question:
 
 Current observed state:
 - No LXC inventory was discovered locally.
-- Known machines are `10.25.25.107`, `10.25.25.115`, and future web app VM `10.10.25.113`.
+- Known machines are `10.25.25.107`, `10.25.25.115`, and future web app VM `10.25.25.113`.

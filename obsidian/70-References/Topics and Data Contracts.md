@@ -51,6 +51,6 @@ Map source:
 Do not make the frontend depend on ROS 1 master, ROS 1 service types, or direct ROS 1 endpoints. The bridge VM owns that translation.
 
 Future Robot Control Center web app VM:
-- LAN: `10.10.25.113`
+- LAN: `10.25.25.113`
 - Tailscale: `100.121.18.83`
 - Should consume bridge VM endpoints, not ROS 1 directly.

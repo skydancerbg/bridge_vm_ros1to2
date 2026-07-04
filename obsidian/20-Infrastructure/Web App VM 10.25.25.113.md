@@ -1,4 +1,4 @@
-# Web App VM 10.10.25.113
+# Web App VM 10.25.25.113
 
 ## Identity
 
@@ -11,11 +11,11 @@ Proxmox:
 - VM name: `u24ai-RobcoGADGET-web`
 
 Network:
-- LAN IP: `10.10.25.113`
+- LAN IP: `10.25.25.113`
 - Tailscale IP: `100.121.18.83`
 
 Expected access:
-- `swu@10.10.25.113`
+- `user@10.25.25.113`
 - Sudo-capable access for runtime/deployment work.
 
 ## Expected Integration With Bridge VM

@@ -14,7 +14,7 @@
 - [[20-Infrastructure/Machines and Access]]
 - [[20-Infrastructure/Bridge VM 10.25.25.107]]
 - [[20-Infrastructure/Sim ROS1 VM 10.25.25.115]]
-- [[20-Infrastructure/Web App VM 10.10.25.113]]
+- [[20-Infrastructure/Web App VM 10.25.25.113]]
 - [[20-Infrastructure/Software Inventory]]
 
 ## Services

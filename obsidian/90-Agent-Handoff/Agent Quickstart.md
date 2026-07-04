@@ -4,7 +4,7 @@
 
 Continue development and operation of the ROS bridge project without breaking the current split-service architecture.
 
-The bridge VM is `10.25.25.107`. The upstream ROS 1 master/sim VM is `10.25.25.115`. The future Robot Control Center web app VM is `10.10.25.113`.
+The bridge VM is `10.25.25.107`. The upstream ROS 1 master/sim VM is `10.25.25.115`. The future Robot Control Center web app VM is `10.25.25.113`.
 
 Proxmox:
 - Server/node: `aipve`
@@ -83,7 +83,7 @@ git status --short
 1. Keep upstream ROS 1 master stable at `10.25.25.115:11311`.
 2. Revalidate `/robot/amcl_pose` over websocket.
 3. Use the documented sim start command if ROS master is down.
-4. Prepare future web app work on `10.10.25.113`.
+4. Prepare future web app work on `10.25.25.113`.
 5. Keep frontend using HTTP map plus websocket live topics.
 6. Keep docs and vault updated.
 

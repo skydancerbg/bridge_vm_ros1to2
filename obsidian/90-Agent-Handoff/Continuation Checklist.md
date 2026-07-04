@@ -8,8 +8,8 @@ Use this checklist when starting from a new VM or new agent session.
 - [ ] Confirm passwordless sudo or root path on `10.25.25.107`.
 - [ ] Confirm SSH to `swu@10.25.25.115`.
 - [ ] Confirm `root@10.25.25.115` if deeper sim control is needed.
-- [ ] Confirm SSH to `swu@10.10.25.113`.
-- [ ] Confirm passwordless sudo or root path on `10.10.25.113`.
+- [ ] Confirm SSH to `user@10.25.25.113`.
+- [ ] Confirm passwordless sudo or root path on `10.25.25.113`.
 
 ## Bridge VM Baseline
 

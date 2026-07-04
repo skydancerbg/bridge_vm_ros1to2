@@ -21,7 +21,7 @@ sudo install -o root -g root -m 0644 /home/swu/bridge-vm-config-repo/docs/Handof
 | Bridge VM Tailscale | `100.102.124.43` | Tailscale address observed on `tailscale0`. |
 | Upstream sim / ROS 1 master VM | `10.25.25.115` | Proxmox VM ID `12851`, name `u20-RB1sim-ros1and2-bridge-geminicli`; provides ROS 1 master at `http://10.25.25.115:11311`; expected to host the simulation/navigation stack. |
 | Upstream sim Tailscale | `100.79.246.33` | Tailscale address supplied on `2026-07-04`. |
-| Future Robot Control Center web app VM | `10.10.25.113` | Proxmox VM ID `12850`, name `u24ai-RobcoGADGET-web`; future web app development target on node `aipve`. |
+| Future Robot Control Center web app VM | `10.25.25.113` | Proxmox VM ID `12850`, name `u24ai-RobcoGADGET-web`; future web app development target on node `aipve`. |
 | Future web app Tailscale | `100.121.18.83` | Tailscale address supplied on `2026-07-04`. |
 | Localhost | `127.0.0.1` | Used for bridge-local endpoint checks. |
 | Bind-all interfaces | `0.0.0.0` | Used by Flask map exporter and rosbridge websocket listeners. |
@@ -33,8 +33,8 @@ Give the new development VM passwordless SSH access to:
 - A sudo-capable path on `10.25.25.107`, ideally passwordless sudo for `systemctl`, `/etc/systemd/system`, `/usr/local/bin`, and package installs.
 - `swu@10.25.25.115` for upstream sim status and restart workflows.
 - `root@10.25.25.115` if the new VM must reproduce deeper remote access previously confirmed from the bridge VM.
-- `swu@10.10.25.113` for future Robot Control Center web app development.
-- A sudo-capable path on `10.10.25.113` for future web app runtime/deployment work.
+- `user@10.25.25.113` for future Robot Control Center web app development.
+- A sudo-capable path on `10.25.25.113` for future web app runtime/deployment work.
 
 Known bridge-side helper scripts assume SSH to `10.25.25.115` through local user `swu`, with optional `SIM_HOST`, `SIM_USER`, and `LOCAL_SSH_USER` environment overrides.
 
@@ -363,7 +363,7 @@ Future web app development target:
 - Proxmox node/server: `aipve`
 - VM ID: `12850`
 - VM name: `u24ai-RobcoGADGET-web`
-- LAN IP: `10.10.25.113`
+- LAN IP: `10.25.25.113`
 - Tailscale IP: `100.121.18.83`
 
 The expected web app role is the future Robot Control Center / RobcoGADGET frontend. It should consume the bridge VM endpoints rather than coupling directly to ROS 1:

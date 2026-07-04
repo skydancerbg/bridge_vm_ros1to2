@@ -31,7 +31,7 @@ Network:
 - Bridge VM Tailscale IP: `100.102.124.43`
 - Upstream ROS 1 master / sim VM: `10.25.25.115`
 - Upstream ROS 1 master / sim VM Tailscale IP: `100.79.246.33`
-- Future Robot Control Center web app VM LAN IP: `10.10.25.113`
+- Future Robot Control Center web app VM LAN IP: `10.25.25.113`
 - Future Robot Control Center web app VM Tailscale IP: `100.121.18.83`
 - Default gateway: `10.25.25.1`
 
@@ -51,8 +51,8 @@ Passwordless access needed from a new development VM:
 - A sudo-capable path on `10.25.25.107`, ideally passwordless sudo for service management.
 - `swu@10.25.25.115` for the upstream sim/ROS 1 master VM.
 - `root@10.25.25.115` if deeper sim-control access is needed.
-- `swu@10.10.25.113` for future Robot Control Center web app development.
-- A sudo-capable path on `10.10.25.113` for web app runtime/deployment work.
+- `user@10.25.25.113` for future Robot Control Center web app development.
+- A sudo-capable path on `10.25.25.113` for web app runtime/deployment work.
 
 Known constraint:
 - On `2026-07-03`, `ROS_MASTER_URI=http://10.25.25.115:11311` was unreachable from this VM.

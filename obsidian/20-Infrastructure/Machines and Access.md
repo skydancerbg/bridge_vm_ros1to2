@@ -9,7 +9,7 @@
 | Bridge VM Tailscale | `100.102.124.43` | Tailscale-dependent | Tailscale address on bridge VM. |
 | Upstream sim / ROS 1 master | `10.25.25.115` | `swu`, `root` if needed | VM ID `12851`, name `u20-RB1sim-ros1and2-bridge-geminicli`; provides ROS 1 master at `http://10.25.25.115:11311`. |
 | Upstream sim Tailscale | `100.79.246.33` | Tailscale-dependent | Tailscale address supplied on `2026-07-04`. |
-| Future Robot Control Center web app | `10.10.25.113` | `swu`, sudo needed | VM ID `12850`, name `u24ai-RobcoGADGET-web`; future web app development target. |
+| Future Robot Control Center web app | `10.25.25.113` | `user`, sudo needed | VM ID `12850`, name `u24ai-RobcoGADGET-web`; future web app development target. |
 | Future web app Tailscale | `100.121.18.83` | Tailscale-dependent | Tailscale address supplied on `2026-07-04`. |
 | Gateway | `10.25.25.1` | N/A | Default route for bridge VM LAN. |
 
@@ -41,8 +41,8 @@ Required:
 - `swu@10.25.25.107`
 - Passwordless or otherwise non-interactive sudo on `10.25.25.107`
 - `swu@10.25.25.115`
-- `swu@10.10.25.113`
-- Passwordless or otherwise non-interactive sudo on `10.10.25.113`
+- `user@10.25.25.113`
+- Passwordless or otherwise non-interactive sudo on `10.25.25.113`
 
 Needed for deeper sim control if required:
 - `root@10.25.25.115`
@@ -58,6 +58,6 @@ See [[40-Operations/Windows SSH Access Setup]].
 
 - [[20-Infrastructure/Bridge VM 10.25.25.107]]
 - [[20-Infrastructure/Sim ROS1 VM 10.25.25.115]]
-- [[20-Infrastructure/Web App VM 10.10.25.113]]
+- [[20-Infrastructure/Web App VM 10.25.25.113]]
 - [[40-Operations/Remote Sim Operations]]
 - [[90-Agent-Handoff/Agent Quickstart]]

@@ -29,4 +29,4 @@ Proxmox inventory:
 - Node/server: `aipve`
 - Bridge VM: ID `12800`, `u20-ROS1ROS2-bridge`, LAN `10.25.25.107`, Tailscale `100.102.124.43`
 - Sim/ROS 1 VM: ID `12851`, `u20-RB1sim-ros1and2-bridge-geminicli`, LAN `10.25.25.115`, Tailscale `100.79.246.33`
-- Future web app VM: ID `12850`, `u24ai-RobcoGADGET-web`, LAN `10.10.25.113`, Tailscale `100.121.18.83`
+- Future web app VM: ID `12850`, `u24ai-RobcoGADGET-web`, LAN `10.25.25.113`, Tailscale `100.121.18.83`
