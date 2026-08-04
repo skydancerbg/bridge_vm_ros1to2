@@ -58,5 +58,15 @@
     "repo_path": "live-files/home/swu/bridge_support/ros2_topic_advertiser.py",
     "live_path": "/home/swu/bridge_support/ros2_topic_advertiser.py",
     "description": "ROS 2 helper that advertises browser-consumed topics for rosbridge type inference."
+  },
+  {
+    "repo_path": "live-files/etc/robco/fastdds_udp_only.xml",
+    "live_path": "/etc/robco/fastdds_udp_only.xml",
+    "description": "FastDDS profile forcing UDPv4 only. The shared-memory transport fails on this host (open_and_lock_file), which broke local ROS 2 discovery; every ROS 2 process here sets FASTRTPS_DEFAULT_PROFILES_FILE to this file."
+  },
+  {
+    "repo_path": "live-files/usr/local/bin/bridge_ros2_odom_probe.py",
+    "live_path": "/usr/local/bin/bridge_ros2_odom_probe.py",
+    "description": "ROS 2 odom health probe used by the dynamic-bridge watchdog. Kept separate so it can run under env -i with Foxy alone; in the watchdog mixed noetic+foxy environment rclpy sees an empty graph."
   }
 ]

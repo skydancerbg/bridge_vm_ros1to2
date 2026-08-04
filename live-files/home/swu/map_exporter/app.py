@@ -79,9 +79,14 @@ def export_map():
     return meta
 
 
-def refresh_map():
-    with export_lock:
+def refresh_map(blocking=True):
+    acquired = export_lock.acquire(blocking=blocking)
+    if not acquired:
+        raise RuntimeError("map refresh already in progress")
+    try:
         return export_map()
+    finally:
+        export_lock.release()
 
 
 @app.route("/")
@@ -98,8 +103,10 @@ def index():
 @app.route("/refresh")
 def refresh():
     try:
-        meta = refresh_map()
+        meta = refresh_map(blocking=False)
         return jsonify({"status": "ok", "meta": meta})
+    except RuntimeError as exc:
+        return jsonify({"status": "busy", "error": str(exc)}), 202
     except Exception as exc:
         return jsonify({"status": "error", "error": str(exc)}), 500
 
@@ -126,8 +133,5 @@ def map_meta():
 
 if __name__ == "__main__":
     os.makedirs(OUTPUT_DIR, exist_ok=True)
-    try:
-        refresh_map()
-    except Exception as exc:
-        app.logger.warning("Initial map export failed: %s", exc)
+    threading.Thread(target=refresh_map, daemon=True).start()
     app.run(host=HOST, port=PORT)

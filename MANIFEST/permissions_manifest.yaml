@@ -70,5 +70,17 @@
     "owner": "root",
     "group": "root",
     "mode": "644"
+  },
+  {
+    "live_path": "/etc/robco/fastdds_udp_only.xml",
+    "owner": "root",
+    "group": "root",
+    "mode": "644"
+  },
+  {
+    "live_path": "/usr/local/bin/bridge_ros2_odom_probe.py",
+    "owner": "root",
+    "group": "root",
+    "mode": "755"
   }
 ]
