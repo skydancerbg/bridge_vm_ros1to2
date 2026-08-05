@@ -18,6 +18,8 @@
 - `/home/swu/map_exporter/run.sh`
 - `/home/swu/map_exporter/ros-map-export.service`
 - `/etc/systemd/system/ros-map-export.service`
+- `/etc/systemd/system/rosbridge-health.service`
+- `/usr/local/bin/rosbridge_health_watchdog.py`
 - `ros1-dynamic-bridge.service`
 - `rosbridge-websocket.service`
 - `ros-map-export.service`
@@ -49,6 +51,7 @@
 - Treat the split bridge services as authoritative; `ros-bridge.service` is retired.
 - If frontend pose delivery is questioned, compare `/robot/amcl_pose` with `/robot/robotnik_base_control/odom`.
 - The current watchdog policy only restarts `ros1-dynamic-bridge.service` when ROS 1 odom publisher visibility is missing and ROS 2 bridged odom is also unhealthy for 3 consecutive checks.
+- `rosbridge-websocket.service` has its own supervisor since 05.08.2026, `rosbridge-health.service`; see the section below before changing either.
 - Bridge-side repeatable nav testing lives in `scripts/capture_nav_goals_ros1.py`, `scripts/run_nav_goal_test_ros1.py`, `scripts/run_nav_goal_test.sh`, `scripts/cancel_nav_goal_test.sh`, and `scripts/nav_goal_test_status.sh`.
 - Passwordless SSH from this VM to the sim VM is confirmed for `swu@10.25.25.115` and `root@10.25.25.115`.
 - The confirmed remote sim restart entrypoint is `/home/swu/restart_neo_workshop_navigation.sh` on `10.25.25.115`.
@@ -112,3 +115,39 @@ daemon and will report an empty graph while a real subscriber is receiving at 33
 
 The fastest true test is two throwaway processes — one publishing, one subscribing, both under
 `env -i` with Foxy alone. If they cannot exchange messages, nothing else on this host will work.
+
+
+## rosbridge health supervision (added 05.08.2026)
+
+`rosbridge-websocket.service` can be `active` and serving nothing. On 05.08.2026 it stopped
+accepting websocket handshakes **twice in one day** under browser-session churn; the second time
+it also took down the web backend's own command channel (`TimeoutError: timed out during opening
+handshake`), so the robot could not be commanded at all. The process never exits, so `Restart=always`
+never fires and systemd sees a healthy unit. rosbridge_server 1.3.1 exposes no `websocket_ping_*`
+parameters, so there is no dead-peer detection to switch on.
+
+`rosbridge-health.service` (`/usr/local/bin/rosbridge_health_watchdog.py`) supervises it:
+
+- **Probe A**, every 15 s: complete a websocket handshake to `127.0.0.1:9090` and close cleanly.
+  Three consecutive failures restart the unit. That is the exact observed signature.
+- **Probe B**, every 5 min: subscribe to `/robot/robotnik_base_control/odom`, require a real
+  message, unsubscribe, close. Two consecutive failures restart the unit. This catches the other
+  failure: connections accepted while nothing flows.
+- **Restraints:** at most one restart per 600 s, and none within 60 s of `ros1-dynamic-bridge`
+  restarting — its restarts destroy the ROS 2 publishers rosbridge has matched, so a rosbridge
+  failure in that window is downstream of it, not its own.
+- **It sources no ROS environment at all.** Deliberate: both health checks in
+  `ros1_dynamic_bridge_watchdog.sh` were once blinded for months by having noetic and foxy sourced
+  together. A plain websocket client cannot repeat that mistake.
+
+Every event is written to journald and to `/var/log/robco/rosbridge_health.jsonl`, one JSON object
+per line, including the measured recovery latency after a restart. EXP-09's 72 h soak reads that
+file as fault-matrix data, so **do not delete or hand-edit it**.
+
+Accepted 05.08.2026 in the production configuration: `rosbridge-websocket` stopped at 19:24:07,
+probe A failed at 19:24:10 / :25 / :40, the restart was issued at 19:24:40 (**33 s** after the
+stop) and the handshake was accepted again **5.0 s** later. The web backend's persistent command
+channel reconnected on its own, and `/healthz` returned `ok` on the next poll.
+
+Expect a connect/disconnect pair in `journalctl -u rosbridge-websocket` every 15 s: that is probe A,
+and its clean close is what keeps it from becoming the churn it is watching for.

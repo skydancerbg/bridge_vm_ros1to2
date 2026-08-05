@@ -68,5 +68,15 @@
     "repo_path": "live-files/usr/local/bin/bridge_ros2_odom_probe.py",
     "live_path": "/usr/local/bin/bridge_ros2_odom_probe.py",
     "description": "ROS 2 odom health probe used by the dynamic-bridge watchdog. Kept separate so it can run under env -i with Foxy alone; in the watchdog mixed noetic+foxy environment rclpy sees an empty graph."
+  },
+  {
+    "repo_path": "live-files/usr/local/bin/rosbridge_health_watchdog.py",
+    "live_path": "/usr/local/bin/rosbridge_health_watchdog.py",
+    "description": "Health watchdog for rosbridge_websocket. rosbridge can stay `active` while it stops serving - new connections time out during the opening handshake - which systemd cannot see, so this probes the handshake every 15 s and a subscribe round trip every 5 min and restarts the unit after consecutive failures. Speaks plain websockets and sources no ROS environment, so it cannot be blinded the way the mixed noetic+foxy checks in ros1_dynamic_bridge_watchdog.sh once were."
+  },
+  {
+    "repo_path": "live-files/etc/systemd/system/rosbridge-health.service",
+    "live_path": "/etc/systemd/system/rosbridge-health.service",
+    "description": "Systemd unit for the rosbridge health watchdog. Runs as root because its action is `systemctl restart rosbridge-websocket`; deliberately has no Requires= on that unit, since it must keep supervising and recording while rosbridge is down."
   }
 ]

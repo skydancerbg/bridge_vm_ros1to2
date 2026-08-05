@@ -18,7 +18,7 @@
   },
   {
     "service_name": "rosbridge-websocket.service",
-    "purpose": "Exposes ROS 2 topics to websocket clients on ws://10.25.25.107:9090 and must be the only intended owner of port 9090.",
+    "purpose": "Exposes ROS 2 topics to websocket clients on ws://10.25.25.108:9090 and must be the only intended owner of port 9090.",
     "related_files": [
       "/etc/systemd/system/rosbridge-websocket.service"
     ],
@@ -50,7 +50,7 @@
   },
   {
     "service_name": "ros-map-export.service",
-    "purpose": "Serves the browser-facing static map export and metadata on http://10.25.25.107:8081/.",
+    "purpose": "Serves the browser-facing static map export and metadata on http://10.25.25.108:8081/.",
     "related_files": [
       "/etc/systemd/system/ros-map-export.service",
       "/home/swu/map_exporter/app.py",
@@ -76,5 +76,23 @@
       "systemctl status ros-bridge.service --no-pager -l || true"
     ],
     "restart_commands": []
+  },
+  {
+    "service_name": "rosbridge-health.service",
+    "purpose": "Supervises rosbridge-websocket.service, which has twice stopped accepting websocket handshakes while remaining `active` (05.08.2026), once taking the web backend's command channel with it so the robot could not be commanded at all. Probe A completes a handshake every 15 s and restarts the unit after 3 consecutive failures; probe B requires a real odometry message every 5 min and restarts after 2. Restraints: at most one restart per 600 s, and none within 60 s of ros1-dynamic-bridge restarting, whose own restarts destroy the ROS 2 publishers rosbridge has matched. Every event is recorded to /var/log/robco/rosbridge_health.jsonl, which EXP-09's 72 h soak reads as fault-matrix data.",
+    "related_files": [
+      "/etc/systemd/system/rosbridge-health.service",
+      "/usr/local/bin/rosbridge_health_watchdog.py",
+      "/var/log/robco/rosbridge_health.jsonl"
+    ],
+    "verification_commands": [
+      "systemctl status rosbridge-health.service --no-pager -l",
+      "tail -n 20 /var/log/robco/rosbridge_health.jsonl",
+      "journalctl -u rosbridge-health.service -n 40 --no-pager -l",
+      "sudo systemctl stop rosbridge-websocket && sleep 60 && systemctl is-active rosbridge-websocket && tail -n 5 /var/log/robco/rosbridge_health.jsonl"
+    ],
+    "restart_commands": [
+      "sudo systemctl restart rosbridge-health.service"
+    ]
   }
 ]

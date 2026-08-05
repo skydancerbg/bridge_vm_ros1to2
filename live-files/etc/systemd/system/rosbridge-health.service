@@ -1,0 +1,38 @@
+[Unit]
+Description=rosbridge websocket health watchdog
+Documentation=https://github.com/skydancerbg/robco-control-center/blob/main/docs/bridge_telemetry_fault.md
+After=network-online.target rosbridge-websocket.service
+Wants=network-online.target
+# Deliberately NOT Requires= or BindsTo=: this unit has to keep running, and keep recording, while
+# rosbridge is down. A dependency that stopped the watchdog with rosbridge would remove the
+# supervision exactly when it is needed.
+
+[Service]
+Type=simple
+# Root, because the action this unit exists to take is `systemctl restart rosbridge-websocket`.
+# It opens no listening socket of its own and speaks only to 127.0.0.1:9090.
+User=root
+ExecStart=/usr/local/bin/rosbridge_health_watchdog.py
+Restart=always
+RestartSec=10
+
+# The values this deployment runs with, stated here rather than left implicit in the script's
+# defaults. Probe A (handshake) every 15 s, restart after 3 consecutive failures: detection
+# within ~45 s, which is what an unattended 72 h patrol needs, since a wedged rosbridge takes
+# both the telemetry and the operator's ability to stop the robot.
+Environment=ROSBRIDGE_URL=ws://127.0.0.1:9090
+Environment=PROBE_A_INTERVAL=15
+Environment=PROBE_A_TIMEOUT=5
+Environment=PROBE_A_FAILURES=3
+Environment=PROBE_B_INTERVAL=300
+Environment=PROBE_B_TIMEOUT=10
+Environment=PROBE_B_FAILURES=2
+Environment=PROBE_B_TOPIC=/robot/robotnik_base_control/odom
+Environment=PROBE_B_TYPE=nav_msgs/msg/Odometry
+Environment=MIN_RESTART_INTERVAL=600
+Environment=GUARD_UNIT=ros1-dynamic-bridge
+Environment=GUARD_WINDOW=60
+Environment=HEALTH_LOG=/var/log/robco/rosbridge_health.jsonl
+
+[Install]
+WantedBy=multi-user.target

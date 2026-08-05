@@ -7,6 +7,7 @@ Live architecture:
 - `rosbridge-websocket.service` runs rosbridge in a ROS 2-only environment on `0.0.0.0:9090`.
 - `rosbridge-topic-advertiser.service` advertises `/robot/amcl_pose` and `/robot/robotnik_base_control/odom` types into ROS 2.
 - `ros-map-export.service` serves `/map.png` and `/map_meta.json` on `0.0.0.0:8081`.
+- `rosbridge-health.service` supervises `rosbridge-websocket.service` by websocket handshake and restarts it when it stops serving while staying `active` (added 05.08.2026, ahead of the 72 h soak).
 - Legacy combined `ros-bridge.service` is masked/retired and is not the current runtime path.
 
 Current endpoints:

@@ -82,5 +82,17 @@
     "owner": "root",
     "group": "root",
     "mode": "755"
+  },
+  {
+    "live_path": "/usr/local/bin/rosbridge_health_watchdog.py",
+    "owner": "root",
+    "group": "root",
+    "mode": "755"
+  },
+  {
+    "live_path": "/etc/systemd/system/rosbridge-health.service",
+    "owner": "root",
+    "group": "root",
+    "mode": "644"
   }
 ]
