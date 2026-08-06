@@ -30,6 +30,7 @@ Environment=PROBE_B_FAILURES=2
 Environment=PROBE_B_TOPIC=/robot/robotnik_base_control/odom
 Environment=PROBE_B_TYPE=nav_msgs/msg/Odometry
 Environment=MIN_RESTART_INTERVAL=600
+Environment=MIN_RESTART_INTERVAL_AFTER_RECOVERY=60
 Environment=GUARD_UNIT=ros1-dynamic-bridge
 Environment=GUARD_WINDOW=60
 Environment=HEALTH_LOG=/var/log/robco/rosbridge_health.jsonl

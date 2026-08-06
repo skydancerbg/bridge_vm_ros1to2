@@ -119,7 +119,9 @@ def index():
         {
             "service": "ros-map-export",
             "endpoints": ["/", "/refresh", "/map.png", "/map_meta.json"],
-            "map_service": MAP_SERVICE,
+            # Both, in the order they are tried: dynamic_map exists only while a mapping
+            # session is running, static_map the rest of the time (P2.5).
+            "map_services": list(MAP_SERVICES),
         }
     )
 

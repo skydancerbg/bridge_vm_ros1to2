@@ -88,9 +88,21 @@ PROBE_B_TYPE = os.environ.get("PROBE_B_TYPE", "nav_msgs/msg/Odometry")
 UNIT = os.environ.get("ROSBRIDGE_UNIT", "rosbridge-websocket")
 GUARD_UNIT = os.environ.get("GUARD_UNIT", "ros1-dynamic-bridge")
 
-#: No more than one restart per this many seconds. A wedged rosbridge recovers in seconds; if it
-#: does not, restarting it in a loop will not help and would destroy the evidence.
+#: The floor between restarts **when the previous one did not work**. Restarting in a loop a
+#: service that restarting does not fix helps nobody and destroys the evidence.
+#:
+#: It deliberately does NOT apply to a fault that recurs after a genuine recovery. On 06.08.2026
+#: rosbridge wedged, was restarted, served normally for four and a half minutes, and wedged again —
+#: and this floor then held the second restart back for five minutes while a regression suite ran
+#: against a dead read path. That is not thrashing; that is the fault happening twice, and the
+#: second one deserves the same fast answer as the first.
 MIN_RESTART_INTERVAL = float(os.environ.get("MIN_RESTART_INTERVAL", "600"))
+
+#: The floor that applies even to a fresh fault, so a service failing every few seconds still
+#: cannot be restarted in a tight loop.
+MIN_RESTART_INTERVAL_AFTER_RECOVERY = float(
+    os.environ.get("MIN_RESTART_INTERVAL_AFTER_RECOVERY", "60")
+)
 #: Do not restart rosbridge within this long of the dynamic bridge having restarted.
 GUARD_WINDOW = float(os.environ.get("GUARD_WINDOW", "60"))
 #: How long to keep asking after a restart before calling the recovery failed.
@@ -262,6 +274,9 @@ def main() -> int:
     counts = {"A_run": 0, "A_fail": 0, "B_run": 0, "B_fail": 0}
     restarts = 0
     last_restart = None  # monotonic seconds
+    # Whether the service has actually served since the last restart. It decides which floor
+    # applies: a fault that recurs after a real recovery is a new fault, not a restart loop.
+    served_since_restart = True
 
     while _running:
         now = time.monotonic()
@@ -276,6 +291,7 @@ def main() -> int:
                 if consecutive["A"]:
                     record("probe_recovered", probe="A", after_failures=consecutive["A"])
                 consecutive["A"] = 0
+                served_since_restart = True
             else:
                 counts["A_fail"] += 1
                 consecutive["A"] += 1
@@ -314,13 +330,25 @@ def main() -> int:
                     guard_age_s=round(guard_age, 1),
                 )
                 consecutive[trigger] = 0
-            elif since_restart is not None and since_restart < MIN_RESTART_INTERVAL:
+            elif since_restart is not None and since_restart < (
+                MIN_RESTART_INTERVAL_AFTER_RECOVERY if served_since_restart
+                else MIN_RESTART_INTERVAL
+            ):
+                # Two floors, and which one applies is the whole point. If the service served
+                # normally since the last restart, this is the fault happening again and it gets
+                # the short floor. If it never served, restarting plainly is not the answer and the
+                # long floor holds — that is the restart loop worth preventing.
                 record(
                     "restart_suppressed",
-                    reason="min_interval",
+                    reason="min_interval_after_recovery" if served_since_restart
+                    else "min_interval_without_recovery",
                     probe=trigger,
                     since_last_restart_s=round(since_restart, 1),
-                    min_restart_interval_s=MIN_RESTART_INTERVAL,
+                    served_since_restart=served_since_restart,
+                    min_restart_interval_s=(
+                        MIN_RESTART_INTERVAL_AFTER_RECOVERY if served_since_restart
+                        else MIN_RESTART_INTERVAL
+                    ),
                 )
             else:
                 record(
@@ -336,6 +364,9 @@ def main() -> int:
                 # does not turn into a retry loop. The counter, which EXP-09 reports, counts only
                 # restarts that actually happened.
                 last_restart = time.monotonic()
+                # Not served *yet*: the recovery probe below is what earns this back, and until it
+                # does, the long floor is the one that applies.
+                served_since_restart = False
                 if not ok:
                     record("restart_failed", detail=detail, unit=UNIT)
                 else:
@@ -352,6 +383,8 @@ def main() -> int:
                         )
                         if probe_ok:
                             recovered = True
+                            # It served: a later fault is a new fault, and gets the short floor.
+                            served_since_restart = True
                             record(
                                 "recovered",
                                 latency_s=round(time.monotonic() - started, 2),
