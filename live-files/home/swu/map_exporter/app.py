@@ -15,7 +15,10 @@ PORT = 8081
 OUTPUT_DIR = "/home/swu/map_exporter/output"
 PNG_PATH = os.path.join(OUTPUT_DIR, "map.png")
 META_PATH = os.path.join(OUTPUT_DIR, "map_meta.json")
-MAP_SERVICE = "/robot/static_map"
+# Both are nav_msgs/GetMap. `dynamic_map` comes first because it only exists while gmapping is
+# running (P2.5's mapping session), and during a session it is the map that is actually growing;
+# `static_map` is the map server's, which is what exists the rest of the time.
+MAP_SERVICES = ("/robot/dynamic_map", "/robot/static_map")
 
 app = Flask(__name__)
 export_lock = threading.Lock()
@@ -33,16 +36,34 @@ def occupancy_to_grayscale(value):
 
 
 def ensure_ros():
+    """Connect to whichever map service is currently offered.
+
+    Resolved on every export, not cached: which of the two exists is precisely what changes when
+    a mapping session starts or stops, and a proxy held from before a session would keep calling
+    a service that is no longer there.
+    """
     global map_service_proxy
     if not rospy.core.is_initialized():
         rospy.init_node("ros_map_exporter", anonymous=False, disable_signals=True)
-    if map_service_proxy is None:
-        rospy.wait_for_service(MAP_SERVICE, timeout=15.0)
-        map_service_proxy = rospy.ServiceProxy(MAP_SERVICE, GetMap)
+
+    for name in MAP_SERVICES:
+        try:
+            rospy.wait_for_service(name, timeout=3.0)
+        except rospy.ROSException:
+            continue
+        map_service_proxy = rospy.ServiceProxy(name, GetMap)
+        return name
+
+    map_service_proxy = None
+    raise RuntimeError(
+        "no map service is available: tried %s. During a mapping session gmapping offers "
+        "dynamic_map; otherwise the map server offers static_map. If neither is there, the "
+        "simulation's navigation stack is down." % ", ".join(MAP_SERVICES)
+    )
 
 
 def export_map():
-    ensure_ros()
+    source = ensure_ros()
     response = map_service_proxy()
     info = response.map.info
 
@@ -71,6 +92,9 @@ def export_map():
         },
         "generated_at": datetime.now(timezone.utc).isoformat(),
         "image": "/map.png",
+        # Which service this came from: dynamic_map means a mapping session was running and this
+        # is a map still being built, static_map means it is the saved one being served.
+        "source": source,
     }
 
     with open(META_PATH, "w", encoding="utf-8") as handle:
