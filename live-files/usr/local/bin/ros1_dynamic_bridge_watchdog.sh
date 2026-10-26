@@ -1,8 +1,8 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-export ROS_MASTER_URI=http://10.25.25.115:11311
-export ROS_IP=10.25.25.108
+export ROS_MASTER_URI=http://10.25.25.123:11311
+export ROS_IP=10.25.25.115
 export ROS_LOCALHOST_ONLY=0
 # FastDDS shared memory is broken on this host (open_and_lock_file fails); UDP only.
 export FASTRTPS_DEFAULT_PROFILES_FILE=/etc/robco/fastdds_udp_only.xml

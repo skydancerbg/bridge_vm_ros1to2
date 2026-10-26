@@ -10,7 +10,7 @@ start_dynamic_bridge() {
     LOGNAME=swu \
     PATH=/usr/sbin:/usr/bin:/sbin:/bin \
     /bin/bash -lc '
-      export ROS_MASTER_URI=http://10.25.25.115:11311
+      export ROS_MASTER_URI=http://10.25.25.123:11311
       export ROS_IP='"$ROS_IP_VALUE"'
       export ROS_LOCALHOST_ONLY=0
       unset ROS_HOSTNAME
