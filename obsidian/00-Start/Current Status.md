@@ -1,5 +1,14 @@
 # Current Status
 
+Updated 2026-10-27. The sections below this block are the July 2026 observation and are historical; addresses changed, see [[Project Infrastructure 2026-10]] and [[Address change 2026-10-26]].
+
+- Phases 0-1 of the web control center are done; Phase 2: P2.1-P2.5 done, P2.6 (technician mobile view) next.
+- Bridge: rosbridge :9090 and map exporter :8081 on 10.25.25.115, supervised by rosbridge-health.service; ROS master is the sim VM 10.25.25.123.
+- Regression suite on the web VM: 30/30 green.
+- Map is drawn white by default (dark is an opt-in); the robot marker shows on page open.
+
+---
+
 ## Last Observed
 
 Observed on `2026-07-04` from bridge VM `ros1ros2bridge`.

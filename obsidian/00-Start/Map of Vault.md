@@ -62,3 +62,5 @@
 - [[90-Agent-Handoff/Agent Quickstart]]
 - [[90-Agent-Handoff/Continuation Checklist]]
 - [[90-Agent-Handoff/Open Questions]]
+
+- [[20-Infrastructure/Project Infrastructure 2026-10]] (current addresses, repos, units)
