@@ -2,7 +2,7 @@
 
 # HANDOFF — remediation of the 27.10.2026 code review (read this first in a new session)
 
-**Last update:** 27.10.2026 05:56 — handoff created; steps 1.1-1.10 merged; 2.5/2.5a pending flake check
+**Last update:** 27.10.2026 21:29 — steps 1.1-1.10, 2.5a, 2.5 merged; next 2.6
 
 This file lets a new Claude session (or the owner) continue the remediation exactly where it stopped — after a rate limit, a crash or a power cut. It is the single place that says what is done, what is half-done, and what to run next. **Update it after every step with `bash tools/sync_notes.sh "<status>"`** (it also mirrors this file and the progress log into the Obsidian vault on the bridge VM and pushes that repo).
 
@@ -41,6 +41,7 @@ The owner's standing instruction (27.10.2026): implement the plan one step at a 
 5. **Shell quoting:** large multi-line Python via `python - <<'X'` in the Bash tool sometimes fails to parse; write the script to the scratchpad with the Write tool and run it. `python` on this PC is Windows-native: use `C:\...` paths inside Python, `/c/...` in bash.
 6. The sim's `rostopic hz` on sim-time topics may print "no new messages" although data flows; verify with `echo -n1` or from the ROS 2 side (env: `env -i ... FASTRTPS_DEFAULT_PROFILES_FILE=/etc/robco/fastdds_udp_only.xml`, foxy sourced alone).
 7. Dead-man/teleop Playwright specs and `points_ui` have been flaky for the causes in 1 and 2 above; a red full suite must be re-run once on a quiet system before being blamed on a change (baseline-before-blame, plan §0.3).
+9. **A wait loop that greps for its own command line never ends.** `while pgrep -f "playwright test"` inside `ssh ... 'bash -c ...'` matches itself, so the 27.10 flake check sat idle for hours without running a test. Never use `pgrep -f` on a string that appears in the command doing the waiting; give every wait a timeout; before reporting a background job as running, verify it (process list, load, fresh output).
 8. Demo accounts `demo_admin|manager|technician|officer` exist on the web VM (temporary, password given to the owner in chat). Throwaway probe users use the prefix `fixprobe_` and are deleted in the same step.
 
 ## 4. Per-step routine (checklist)
@@ -77,3 +78,7 @@ The owner's standing instruction (27.10.2026): implement the plan one step at a 
 | 1.8 teleop recheck | N-014 | W | b4e7178 | step-1.8-done | 30/30 (205 pytest) |
 | 1.9 argon2 off loop | F-007 | W | d34365a | step-1.9-done | 30/30 (206 pytest, 97 PW); one transient 6-test PW red right after the backend rebuild, green on rerun (suite now waits for /api/health) |
 | 1.10 mapping interlock | F-009(1) | W | 6c7ad3a | step-1.10-done | 30/30 (209 pytest) |
+| 2.5a leaflet teardown | (found in 2.5 verification) | W | e277ab2 | step-2.5a-done | 30/30 (209 pytest, 97 PW); points specs 12/12 clean serial runs (AMCL re-seeded each run) |
+| 2.5 capture newer stamp | F-001 | W | f014cc9 | step-2.5-done | 30/30 (215 pytest, 97 PW); live: 20/20 captures OK |
+
+**Finding N-015 (27.10, found while verifying 2.5):** every point capture forces a no-motion AMCL update; ~100+ of them (a long test loop) collapse the particle cloud (variance ~1e-13, can go negative), after which `stddev_xy` is null and the points specs fail. Recovery: `bash tools/reseed_amcl.sh` (initialpose in frame `robot_map` with covariance 0.25, then a forced update). Production risk: many captures in a row on the real robot. Not changed yet — needs an owner ruling (e.g. rate-limit forced updates or drop them when a fresh sample exists). Also: a flake-check wait loop that greps its own command line never ended and wasted hours; see handoff pitfall 9.
