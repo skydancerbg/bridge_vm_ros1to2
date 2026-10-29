@@ -2,7 +2,7 @@
 
 # HANDOFF — remediation of the 27.10.2026 code review (read this first in a new session)
 
-**Last update:** 29.10.2026 15:17 — stage 2 through 2.10 merged; next 2.11
+**Last update:** 29.10.2026 15:46 — stage 2 through 2.11 merged; next 2.12
 
 This file lets a new Claude session (or the owner) continue the remediation exactly where it stopped — after a rate limit, a crash or a power cut. It is the single place that says what is done, what is half-done, and what to run next. **Update it after every step with `bash tools/sync_notes.sh "<status>"`** (it also mirrors this file and the progress log into the Obsidian vault on the bridge VM and pushes that repo).
 
@@ -41,7 +41,8 @@ The owner's standing instruction (27.10.2026): implement the plan one step at a 
 - **Also merged (S):** 2.8 save script (tag step-2.8-done). Stage 2 mapping steps (2.1-2.4, 2.8) and 2.5/2.5a/2.5c/2.6/2.7 are all in.
 - **Also merged (W):** 2.9 points record the map generation (711fba8, tag step-2.9-done; accepted under the merge-gate rule, see progress log). Pilot points read as stale: expected.
 - **Also merged:** 2.10 mapping passthrough + audit (W, 8a2e1e2) and its companion 2.10s (S, tag step-2.10s-done; sim on `main`). `tools/mapping_via_backend.sh` runs a session through nginx as a throwaway technician (back up and restore the map around it).
-- **Next:** 2.11, 2.12 (W), 2.13 (P, no git), then stage 3 (3.1-3.12), stage 4 (4.1-4.4). Read each step in `03_fix_plan.md`. Owner decisions O-1..O-8 are NOT implemented. Findings needing the owner: N-015, N-016, N-018.
+- **Also merged (W):** 2.11 consoles re-read after reconnect (tag step-2.11-done; merge-gate rule used, third time).
+- **Next:** 2.12 (W, stddev_xy over both axes), 2.13 (P, no git: E1 probe fails closed), then stage 3 (3.1-3.12), stage 4 (4.1-4.4). Read each step in `03_fix_plan.md`. Owner decisions O-1..O-8 are NOT implemented. Findings needing the owner: N-015, N-016, N-018.
 
 ## 3. Pitfalls learned the hard way (do not repeat)
 1. **Never run two Playwright/regression runs on the web VM at once.** They share users, `test-results/` and global setup/teardown; one run deletes the other's accounts and the other sees login failures. This produced several false reds on 27.10. Before starting a run: `ssh webvm 'pgrep -af playwright'` must be empty. Never use `&` for ssh test loops; use `run_in_background` and wait for the notification.
@@ -120,3 +121,4 @@ The owner's standing instruction (27.10.2026): implement the plan one step at a 
 **N-016 root-cause lead (29.10, evidence, not proven):** the watchdog's own docstring documents that rosbridge_server 1.3.1 (Foxy) stalls on websocket handshakes and that the supervised restart is the only lever (the gateway already releases a departed browser's subscriptions). The suite's console churn (connect, subscribe to 5-6 topics, disconnect within a second, repeatedly) triggers it: stalls always begin about 3 minutes into the suite, in the capture-heavy part, and clear on the watchdog restart. Before each stall rosbridge logs "Subscribed" lines with no matching "Unsubscribed" for several clients. Pre-dates the remediation. An owner decision remains (O-9 candidate): reduce churn in the test suite (reuse one console per spec file) or replace/upgrade rosbridge_server.
 | 2.10 mapping passthrough + audit | F-010 (backend), N-005(b) | W | 8a2e1e2 (branch 603dcf9) | step-2.10-done | 235 pytest (+6 mapping, +1 nginx contract), 98 PW, suite 30/30 (first run). Live through nginx and the backend as a throwaway technician: start 200 in 8.7 s, stop 200 in 11.8 s, two audit rows (`mapping.started`, `mapping.stopped`); map restored byte-identical (git clean), localisation restored, user deleted |
 | 2.10s manager failed-save reply carries state | companion to 2.10 | S | merge of 7cee0c1 (tag step-2.10s-done) | step-2.10s-done | acceptance all PASS (AMCL 0.042 m from SLAM pose), map unchanged; sim on `main`, manager restarted. The failed-save path itself was not provoked live |
+| 2.11 consoles re-read after reconnect | F-010 (UI), N-013 | W | see tag step-2.11-done | step-2.11-done | 7 new vitest tests (mappingSync) pass in the build image; 235 pytest; new Playwright test drops the event socket from the server side (`page.routeWebSocket`; browser offline emulation does NOT close an open socket) 6/6 alone. Full suite s211a red in 4 capture specs (points_ui x3, points x1) inside a confirmed rosbridge stall (13:42:33-13:43:03 UTC), the same 12 specs 12/12 alone with 0 stalls => accepted under the merge-gate rule (third use). Own mistake caught by the suite: the map watcher first bumped the picture version on the FIRST connection, which broke an existing map test; it now bumps only on a later connection |
