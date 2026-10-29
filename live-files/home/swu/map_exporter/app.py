@@ -1,7 +1,9 @@
 #!/usr/bin/env python3
+import hashlib
 import json
 import os
 import threading
+from array import array
 from datetime import datetime, timezone
 
 from flask import Flask, jsonify, send_from_directory
@@ -71,7 +73,22 @@ def export_map():
     image = Image.new("L", (info.width, info.height))
     image.putdata(pixels)
     image = image.transpose(Image.FLIP_TOP_BOTTOM)
-    image.save(PNG_PATH)
+
+    # Write to a temporary file and rename it over the published one. os.replace is atomic on one
+    # filesystem, so a reader fetching /map.png or /map_meta.json while a refresh runs sees the
+    # old file or the new one, never half of either (F-012). The PNG goes first and the metadata
+    # second: metadata that names a generation is only ever published after its image is in place.
+    tmp_png = PNG_PATH + ".tmp"
+    image.save(tmp_png, format="PNG")
+    os.replace(tmp_png, PNG_PATH)
+
+    # Identifies this map's content, not the moment it was exported: the same saved map gives the
+    # same value on every refresh; a mapping session that saves a new map, or gmapping while it
+    # builds one, gives a different one. Consumers compare it instead of timestamps.
+    generation = hashlib.sha256(
+        array("b", response.map.data).tobytes()
+        + f"{info.width}x{info.height}@{info.resolution}".encode()
+    ).hexdigest()[:16]
 
     meta = {
         "resolution": info.resolution,
@@ -95,10 +112,13 @@ def export_map():
         # Which service this came from: dynamic_map means a mapping session was running and this
         # is a map still being built, static_map means it is the saved one being served.
         "source": source,
+        "generation": generation,
     }
 
-    with open(META_PATH, "w", encoding="utf-8") as handle:
+    tmp_meta = META_PATH + ".tmp"
+    with open(tmp_meta, "w", encoding="utf-8") as handle:
         json.dump(meta, handle, indent=2)
+    os.replace(tmp_meta, META_PATH)
 
     return meta
 
