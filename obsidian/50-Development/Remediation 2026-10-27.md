@@ -2,7 +2,7 @@
 
 # HANDOFF — remediation of the 27.10.2026 code review (read this first in a new session)
 
-**Last update:** 27.10.2026 21:29 — steps 1.1-1.10, 2.5a, 2.5 merged; next 2.6
+**Last update:** 29.10.2026 12:09 — 1.1-1.10, 2.5a, 2.5, 2.6 merged; next 2.7
 
 This file lets a new Claude session (or the owner) continue the remediation exactly where it stopped — after a rate limit, a crash or a power cut. It is the single place that says what is done, what is half-done, and what to run next. **Update it after every step with `bash tools/sync_notes.sh "<status>"`** (it also mirrors this file and the progress log into the Obsidian vault on the bridge VM and pushes that repo).
 
@@ -30,7 +30,8 @@ The owner's standing instruction (27.10.2026): implement the plan one step at a 
 - **Merged and tagged (W):** 1.1 estop transition, 1.2 estop state ordering, 1.3 estop survives restart, 1.4 teleop socket identity, 1.5 joystick release (blur/hidden/lost capture), 1.6 driver reservation by token, 1.7 idle teleop goes quiet, 1.8 teleop session re-check 2 s, 1.9 Argon2 off the loop, 1.10 mapping interlock. Suite 30/30, 209 pytest, ~97 Playwright. Baseline step 0 done.
 - **Also merged:** 2.5a leaflet teardown (e277ab2) and 2.5 point capture needs a newer pose stamp (f014cc9). Suite 30/30, 215 pytest, 97 Playwright; 20/20 live captures. Web VM is back on `main`.
 - **Open finding N-015:** forced no-motion updates from many captures collapse the AMCL particle cloud; recover with `bash tools/reseed_amcl.sh`; `tools/flake12.sh` runs serial flake checks with re-seed. Needs an owner ruling before capture behaviour changes (see progress log).
-- **Next:** 2.6 (keepalive tied to the live `/robot/amcl`, S — fixes F-017, my own D-24 bug: after a SLAM session the keepalive replays the pre-session pose), then 2.7 (B), 2.1–2.4 and 2.8 (S, they run real mapping sessions — back up the map first, plan §1.3), 2.9–2.13, stage 3, stage 4. Order is binding where "Depends on" says so.
+- **Also merged (S):** 2.6 keepalive replays only the live `/robot/amcl` (7f124fd, tag step-2.6-done); sim VM is on `main`, `amcl-pose-keepalive` active. Live checks script: `tools/live26.sh` (needs the catkin workspace sourced; do not use `rosnode info` right after `kill -9`, it hangs on the dead node).
+- **Next:** 2.7 (atomic map exporter + generation, B), then 2.1–2.4 and 2.8 (S, real mapping sessions — back up the map first, plan §1.3), 2.9–2.13, stage 3, stage 4. Order is binding where "Depends on" says so.
 
 ## 3. Pitfalls learned the hard way (do not repeat)
 1. **Never run two Playwright/regression runs on the web VM at once.** They share users, `test-results/` and global setup/teardown; one run deletes the other's accounts and the other sees login failures. This produced several false reds on 27.10. Before starting a run: `ssh webvm 'pgrep -af playwright'` must be empty. Never use `&` for ssh test loops; use `run_in_background` and wait for the notification.
@@ -81,3 +82,4 @@ The owner's standing instruction (27.10.2026): implement the plan one step at a 
 | 2.5 capture newer stamp | F-001 | W | f014cc9 | step-2.5-done | 30/30 (215 pytest, 97 PW); live: 20/20 captures OK |
 
 **Finding N-015 (27.10, found while verifying 2.5):** every point capture forces a no-motion AMCL update; ~100+ of them (a long test loop) collapse the particle cloud (variance ~1e-13, can go negative), after which `stddev_xy` is null and the points specs fail. Recovery: `bash tools/reseed_amcl.sh` (initialpose in frame `robot_map` with covariance 0.25, then a forced update). Production risk: many captures in a row on the real robot. Not changed yet — needs an owner ruling (e.g. rate-limit forced updates or drop them when a fresh sample exists). Also: a flake-check wait loop that greps its own command line never ended and wasted hours; see handoff pitfall 9.
+| 2.6 keepalive live AMCL | F-017 | S | 7f124fd (branch ede2dbb, 93d1ddb) | step-2.6-done | live (a)-(d) pass: silent <=2.5 s after rosnode kill and kill -9; relaunch publishes only the new run's pose (stamp 19 s old). Suite 30/30 (run 1 green, run 2 red in tasks/telemetry_panel specs that pass alone, retry green: 97 PW). Also: clean systemd stop (no traceback); stopped an orphaned second navigation launch (pid 18659 tree) on the sim |
