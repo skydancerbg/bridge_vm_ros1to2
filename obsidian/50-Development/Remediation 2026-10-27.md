@@ -2,7 +2,7 @@
 
 # HANDOFF — remediation of the 27.10.2026 code review (read this first in a new session)
 
-**Last update:** 29.10.2026 12:39 — 1.1-1.10, 2.5a, 2.5, 2.6, 2.7 merged; next 2.1
+**Last update:** 29.10.2026 12:54 — 1.1-1.10, 2.5a, 2.5, 2.6, 2.7, 2.1 merged; next 2.2
 
 This file lets a new Claude session (or the owner) continue the remediation exactly where it stopped — after a rate limit, a crash or a power cut. It is the single place that says what is done, what is half-done, and what to run next. **Update it after every step with `bash tools/sync_notes.sh "<status>"`** (it also mirrors this file and the progress log into the Obsidian vault on the bridge VM and pushes that repo).
 
@@ -33,7 +33,8 @@ The owner's standing instruction (27.10.2026): implement the plan one step at a 
 - **Also merged (S):** 2.6 keepalive replays only the live `/robot/amcl` (7f124fd, tag step-2.6-done); sim VM is on `main`, `amcl-pose-keepalive` active. Live checks script: `tools/live26.sh` (needs the catkin workspace sourced; do not use `rosnode info` right after `kill -9`, it hangs on the dead node).
 - **Also merged (B):** 2.7 atomic map export + generation (654a2a0, tag step-2.7-done); exporter redeployed and running on the bridge.
 - **Open finding N-016:** rosbridge restarts under test load make ~1 in 3 full-suite runs go red in capture specs (see progress log). A red suite in points/tasks/telemetry_panel: check `ssh bridge 'sudo journalctl -u rosbridge-health --since -15min | grep restarting'` first, then re-run once on a quiet system.
-- **Next:** 2.1–2.4 and 2.8 (S, real mapping sessions — back up the map first, plan §1.3; 2.1 first), then 2.9–2.13, stage 3, stage 4. Order is binding where "Depends on" says so.
+- **Also merged (S):** 2.1 mapping acceptance script (tag step-2.1-done): `tools/map_manager_acceptance.sh [--strict]` on the sim runs a REAL session (backs up the 4 map files to `~/backups/2.1/map`, restores them and relaunches localisation on exit). XFAIL_CHECKS defaults to `c e` until step 2.2 fixes the AMCL seed; remove them there. Sim is on `main`.
+- **Next:** 2.2 (seed AMCL from the final SLAM pose; make `--strict` default, XFAIL empty), then 2.3, 2.4, 2.8 (S), 2.9–2.13, stage 3, stage 4. Order is binding where "Depends on" says so.
 
 ## 3. Pitfalls learned the hard way (do not repeat)
 1. **Never run two Playwright/regression runs on the web VM at once.** They share users, `test-results/` and global setup/teardown; one run deletes the other's accounts and the other sees login failures. This produced several false reds on 27.10. Before starting a run: `ssh webvm 'pgrep -af playwright'` must be empty. Never use `&` for ssh test loops; use `run_in_background` and wait for the notification.
@@ -89,3 +90,4 @@ The owner's standing instruction (27.10.2026): implement the plan one step at a 
 | 2.7 atomic map export | F-012 (exporter) | B | 654a2a0 (branch 452d761) | step-2.7-done | refresh x2: same generation 74e40cd1c4da527c, new generated_at; 1000 reads during refreshes: 0 bad PNG (CRC-checked), 0 bad JSON; one refresh ~8 s (pre-existing cost). Suite 30/30 on the 4th attempt: earlier reds were capture specs hit by rosbridge restarts (N-016), not the exporter |
 
 **Finding N-016 (29.10, found while verifying 2.7):** `rosbridge-health` restarts `rosbridge-websocket` after 3 consecutive probe-A timeouts (44 restarts in total; 3-4 per hour all day on 26.10; 5 between 10:02 and 10:28 UTC on 29.10, only while tests ran). A capture that lands in the ~5 s restart window gets a 409 ("no response from /robot/request_nomotion_update"), which since step 2.5 is refused instead of silently falling back to the last sample. Result: roughly one full-suite run in three goes red in capture-dependent specs (points, tasks, telemetry_panel) with no code fault; they pass alone and on re-run. The service itself answers in ~1.1 s (60/60 direct). Not changed. Options for the owner: (a) the backend retries the forced update once after a reconnect; (b) tests retry on 409; (c) find why rosbridge stalls under many clients (single-threaded python, probe timeout 5 s) and give it capacity or a longer probe timeout. Recommendation: (c) investigate, (a) as a cheap mitigation.
+| 2.1 mapping acceptance script | F-016/N-009 | S | merge of 859fd77 (tag step-2.1-done) | step-2.1-done | two real sessions on the sim: (a) start 7.0 s / stop 8.3 s PASS, (b) PASS, (d) PASS, (c) and (e) XFAIL as planned (restore seeds AMCL at 0,0,0: 20 s after the stop AMCL reported (-0.01,-0.001) while the robot was at (-2.8,1.29), F-009 reproduced). Map files byte-identical to the backup after both runs; suite 30/30 |
