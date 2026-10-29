@@ -2,7 +2,7 @@
 
 # HANDOFF — remediation of the 27.10.2026 code review (read this first in a new session)
 
-**Last update:** 29.10.2026 13:32 — 1.1-1.10, 2.5a, 2.5, 2.6, 2.7, 2.1, 2.2 merged; next 2.3
+**Last update:** 29.10.2026 14:08 — 1.1-1.10, 2.5a, 2.5, 2.6, 2.7, 2.1, 2.2, 2.5c, 2.3 merged; next 2.4
 
 This file lets a new Claude session (or the owner) continue the remediation exactly where it stopped — after a rate limit, a crash or a power cut. It is the single place that says what is done, what is half-done, and what to run next. **Update it after every step with `bash tools/sync_notes.sh "<status>"`** (it also mirrors this file and the progress log into the Obsidian vault on the bridge VM and pushes that repo).
 
@@ -35,7 +35,9 @@ The owner's standing instruction (27.10.2026): implement the plan one step at a 
 - **Open finding N-016:** rosbridge restarts under test load make ~1 in 3 full-suite runs go red in capture specs (see progress log). A red suite in points/tasks/telemetry_panel: check `ssh bridge 'sudo journalctl -u rosbridge-health --since -15min | grep restarting'` first, then re-run once on a quiet system.
 - **Also merged (S):** 2.1 mapping acceptance script (tag step-2.1-done): `tools/map_manager_acceptance.sh [--strict]` on the sim runs a REAL session (backs up the 4 map files to `~/backups/2.1/map`, restores them and relaunches localisation on exit). XFAIL_CHECKS defaults to `c e` until step 2.2 fixes the AMCL seed; remove them there. Sim is on `main`.
 - **Also merged (S):** 2.2 seed AMCL from the final SLAM pose (tag step-2.2-done): the stop reads the pose before gmapping dies, seeds `localization_restore.launch`, and proves a fresh pose; acceptance script is strict by default. Sim is on `main`, map manager restarted. Use `bash tools/wsuite.sh <label>` for suite runs: it re-seeds AMCL, keeps the full output on the web VM (`~/suite_<label>.txt`) and lists rosbridge restarts in the window.
-- **Next:** 2.3 (map manager keeps process handles, truthful failure phases, shlex.quote), then 2.4, 2.8 (S), 2.9–2.13, stage 3, stage 4. Order is binding where "Depends on" says so.
+- **Also merged:** 2.5c capture asks twice (W, 6118d16) and 2.3 map manager process handles (S, dc6a048, sim on `main`, manager restarted). Acceptance script has `--break-start`.
+- **Merge gate (deviation, see progress log):** a red suite is accepted only when every failing spec is explained by a rosbridge stall in the bridge log AND passes alone straight after. `bash tools/wsuite.sh <label>` prints stalls in the run window (event lines = probe failures/restarts).
+- **Next:** 2.4 (manager infers its state at start-up), then 2.8 (S, save script), 2.9–2.13, stage 3, stage 4. Order is binding where "Depends on" says so.
 
 ## 3. Pitfalls learned the hard way (do not repeat)
 1. **Never run two Playwright/regression runs on the web VM at once.** They share users, `test-results/` and global setup/teardown; one run deletes the other's accounts and the other sees login failures. This produced several false reds on 27.10. Before starting a run: `ssh webvm 'pgrep -af playwright'` must be empty. Never use `&` for ssh test loops; use `run_in_background` and wait for the notification.
