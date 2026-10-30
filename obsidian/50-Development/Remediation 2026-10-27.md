@@ -2,7 +2,7 @@
 
 # HANDOFF — remediation of the 27.10.2026 code review (read this first in a new session)
 
-**Last update:** 30.10.2026 08:00 — 4.1-4.3 merged; next 4.4
+**Last update:** 30.10.2026 08:01 — REMEDIATION COMPLETE: all 39 steps merged; next owner decisions then P2.6
 
 This file lets a new Claude session (or the owner) continue the remediation exactly where it stopped — after a rate limit, a crash or a power cut. It is the single place that says what is done, what is half-done, and what to run next. **Update it after every step with `bash tools/sync_notes.sh "<status>"`** (it also mirrors this file and the progress log into the Obsidian vault on the bridge VM and pushes that repo).
 
@@ -44,7 +44,7 @@ The owner's standing instruction (27.10.2026): implement the plan one step at a 
 - **Also merged (W):** 2.11 consoles re-read after reconnect (tag step-2.11-done; merge-gate rule used, third time).
 - **Stage 2 is complete** (2.1-2.13, with 2.5a/2.5c/2.10s companions). 2.12 (W, tag step-2.12-done) and 2.13 (P, probe fails closed; `.bak-2.13` kept next to the script).
 - **Stage 3 complete (3.1-3.12)** (2.10b, 3.1-3.9 merged; see the progress log). The web VM runs the new compose network (172.28.0.0/24, nginx 172.28.0.10); `docker compose down && up -d` is needed after any change to the network section.
-- **Next:** 4.4 (P docs only), then the final report. Read each step in `03_fix_plan.md`. Steps that install units or touch firewalls (3.12, 4.3 etc.) need the owner's explicit OK. Owner decisions O-1..O-8 NOT implemented. Findings needing the owner: N-015, N-016, N-018.
+- **REMEDIATION COMPLETE (30.10.2026): all 39 steps merged, suite 32/32 green.** Next development step is P2.6 (technician mobile view), after the owner rules on O-1..O-8 (O-1 estop roles first) and on N-015, N-016, N-018. Do not implement owner decisions without the owner.
 
 ## 3. Pitfalls learned the hard way (do not repeat)
 1. **Never run two Playwright/regression runs on the web VM at once.** They share users, `test-results/` and global setup/teardown; one run deletes the other's accounts and the other sees login failures. This produced several false reds on 27.10. Before starting a run: `ssh webvm 'pgrep -af playwright'` must be empty. Never use `&` for ssh test loops; use `run_in_background` and wait for the notification.
@@ -145,3 +145,6 @@ The owner's standing instruction (27.10.2026): implement the plan one step at a 
 | 4.1 nginx config in the image | F-020 | W | see tag step-4.1-done | step-4.1-done | Compose v5.1.1 on the web VM (≥2.17). `build.additional_contexts: nginxconf: ./nginx`, `COPY --from=nginxconf templates /etc/nginx/templates`, template mount removed. `docker inspect robco-nginx` → Mounts `[]`. Two new suite checks (container template sha256 equals the repo's; no template mount) → 32/32, 287 pytest, 101 Playwright, green first time. `docs/deployment.md` updated: a template change now needs `docker compose build nginx && up -d nginx`. |
 | 4.2 / 4.2b docs addresses | N-007 (W part) | W | see tags step-4.2-done, step-4.2b-done | step-4.2-done | Live values read from the sim (`ufw status numbered`: `.115` bridge rule; unit files: `ROS_IP/MASTER_URI` = `.123`). `sim_vm_services.md`, `ssh_access.md` (matrix, current facts, Finding 1 marked historical, port note now cites `lockdown_check.py`), PRD, plan header, `ros_interface_inventory.md`, `bridge_telemetry_fault.md`. Remaining `.108` hits are only inside the historical Finding 1 / banner text. Docs only; no suite run. |
 | 4.3 sim units recorded | N-010 | S | merge 4a262cd | step-4.3-done | `tools/systemd/{robco-map-manager,web-video-server,xvfb}.service` copied from `/etc/systemd/system` on the sim (+ comment headers with install lines) and `ufw-rules.txt` (record only). On the sim after ff: the three units are identical to the host's (comments excluded). Nothing on the host changed or restarted. Note: the host also keeps `*.service.bak-20261026` files from earlier edits (not copied). |
+| 4.4 entry-point documents | N-007 (P), F-020 | P | no git (backups `CLAUDE.md.bak-4.4`, `HANDOFF-experiments.md.bak-4.4`) | — | Addresses re-verified live (`bridge hostname -I` → .115, `sim` → .123); the table already carried them and `.108` appears only as "unrelated". D-12 now says the nginx configuration is also baked into the image since 4.1. D-18 (both files) amended to the watchdog's real constants (600 s / 60 s after recovery / 60 s guard). The 26.10 "caches the robot row" sentence → "reads the bridge address from its settings at start". |
+
+**All 39 steps of the plan are merged. Remediation complete (30.10.2026).** Open for the owner: O-1..O-8, N-015 (forced updates collapse AMCL), N-016 (rosbridge stalls), N-018, N-017 (benign, low). Merge-gate rule used for 2.x/3.10 where the suite was red only inside a confirmed rosbridge stall (each logged above).
