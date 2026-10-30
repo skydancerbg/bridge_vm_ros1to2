@@ -2,7 +2,7 @@
 
 # HANDOFF — remediation of the 27.10.2026 code review (read this first in a new session)
 
-**Last update:** 30.10.2026 07:58 — stage 3 complete; 4.1 merged; next 4.2
+**Last update:** 30.10.2026 07:59 — 4.1, 4.2 merged; next 4.3
 
 This file lets a new Claude session (or the owner) continue the remediation exactly where it stopped — after a rate limit, a crash or a power cut. It is the single place that says what is done, what is half-done, and what to run next. **Update it after every step with `bash tools/sync_notes.sh "<status>"`** (it also mirrors this file and the progress log into the Obsidian vault on the bridge VM and pushes that repo).
 
@@ -44,7 +44,7 @@ The owner's standing instruction (27.10.2026): implement the plan one step at a 
 - **Also merged (W):** 2.11 consoles re-read after reconnect (tag step-2.11-done; merge-gate rule used, third time).
 - **Stage 2 is complete** (2.1-2.13, with 2.5a/2.5c/2.10s companions). 2.12 (W, tag step-2.12-done) and 2.13 (P, probe fails closed; `.bak-2.13` kept next to the script).
 - **Stage 3 complete (3.1-3.12)** (2.10b, 3.1-3.9 merged; see the progress log). The web VM runs the new compose network (172.28.0.0/24, nginx 172.28.0.10); `docker compose down && up -d` is needed after any change to the network section.
-- **Next:** 4.2, 4.3, 4.4. Read each step in `03_fix_plan.md`. Steps that install units or touch firewalls (3.12, 4.3 etc.) need the owner's explicit OK. Owner decisions O-1..O-8 NOT implemented. Findings needing the owner: N-015, N-016, N-018.
+- **Next:** 4.3 (needs the owner's OK to touch the sim; copy-only), 4.4. Read each step in `03_fix_plan.md`. Steps that install units or touch firewalls (3.12, 4.3 etc.) need the owner's explicit OK. Owner decisions O-1..O-8 NOT implemented. Findings needing the owner: N-015, N-016, N-018.
 
 ## 3. Pitfalls learned the hard way (do not repeat)
 1. **Never run two Playwright/regression runs on the web VM at once.** They share users, `test-results/` and global setup/teardown; one run deletes the other's accounts and the other sees login failures. This produced several false reds on 27.10. Before starting a run: `ssh webvm 'pgrep -af playwright'` must be empty. Never use `&` for ssh test loops; use `run_in_background` and wait for the notification.
@@ -143,3 +143,4 @@ The owner's standing instruction (27.10.2026): implement the plan one step at a 
 | 3.11 suite loopback checks + counts | F-016, N-009 | W | see tag step-3.11-done | step-3.11-done | `loopback_only PORT`: listeners from `ss -ltnH "( sport = :P )"`, at least one and all on 127.0.0.1 or [::1]. Proven on the web VM against `http.server`: 0.0.0.0 → red, 127.0.0.1 → green, nothing listening → red; the real 5432/8000/9091 green. Login body now via stdin `--data @-`. Status line: `30/30 checks (287 pytest, 101 Playwright tests passed)`. Full suite green (first run red: stall at 05:43 UTC hit 4 pose specs; pytest count regex fixed and rerun green, no gate needed). |
 | 3.12 lockdown check | N-009 | W | see tag step-3.12-done | step-3.12-done | `scripts/lockdown_check.py` (stdlib; read-only TCP connects): from the PC (10.15.20.251) `10.25.25.113:80` answers; `.115:9090`, `.115:8081`, `.123:8080`, `.123:8090` all time out → LOCKDOWN OK. No firewall touched, no negative test (per plan). Documented in `docs/deployment.md`. Script + docs only, no suite run needed (nothing the suite executes changed). |
 | 4.1 nginx config in the image | F-020 | W | see tag step-4.1-done | step-4.1-done | Compose v5.1.1 on the web VM (≥2.17). `build.additional_contexts: nginxconf: ./nginx`, `COPY --from=nginxconf templates /etc/nginx/templates`, template mount removed. `docker inspect robco-nginx` → Mounts `[]`. Two new suite checks (container template sha256 equals the repo's; no template mount) → 32/32, 287 pytest, 101 Playwright, green first time. `docs/deployment.md` updated: a template change now needs `docker compose build nginx && up -d nginx`. |
+| 4.2 / 4.2b docs addresses | N-007 (W part) | W | see tags step-4.2-done, step-4.2b-done | step-4.2-done | Live values read from the sim (`ufw status numbered`: `.115` bridge rule; unit files: `ROS_IP/MASTER_URI` = `.123`). `sim_vm_services.md`, `ssh_access.md` (matrix, current facts, Finding 1 marked historical, port note now cites `lockdown_check.py`), PRD, plan header, `ros_interface_inventory.md`, `bridge_telemetry_fault.md`. Remaining `.108` hits are only inside the historical Finding 1 / banner text. Docs only; no suite run. |
