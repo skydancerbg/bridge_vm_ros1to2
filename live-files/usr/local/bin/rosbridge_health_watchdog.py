@@ -47,6 +47,16 @@ expected, not its own fault.
 recovery latency after a restart. EXP-09 reads that file: it turns "rosbridge wedged twice today
 and a restart fixed it" into detection latency, recovery latency and event count over 72 hours —
 Г5 fault-matrix data about the availability of the mediated command path.
+
+**Probe C (Gazebo liveness, observation only; added 13.11.2026).** On 12.11.2026 gzserver segfaulted
+on the sim VM and nobody noticed: roslaunch and the ROS master stayed up, every unit stayed
+`active`, the master kept the dead `/gazebo` registration, and a patrol would simply have stood
+still. Probe C asks the sim's ROS master where `/gazebo` lives and then asks that address for its
+pid (plain XML-RPC from the standard library, so still no ROS environment). A crashed gzserver
+refuses the connection although its registration is still there. Events: `gazebo_down` on the
+first failure (with the last known pid), `gazebo_up` when it answers again, `gazebo_restarted` when
+it answers with a different pid. Probe C never restarts anything: a Gazebo crash ends the
+simulated world, and restarting it is a procedure (D-48), not a watchdog's call.
 """
 
 from __future__ import annotations
@@ -58,6 +68,7 @@ import signal
 import subprocess
 import sys
 import time
+import xmlrpc.client
 from datetime import datetime, timezone
 from pathlib import Path
 
@@ -84,6 +95,12 @@ PROBE_B_FAILURES = int(os.environ.get("PROBE_B_FAILURES", "2"))
 #: missing message inside the timeout means the read path is down rather than merely quiet.
 PROBE_B_TOPIC = os.environ.get("PROBE_B_TOPIC", "/robot/robotnik_base_control/odom")
 PROBE_B_TYPE = os.environ.get("PROBE_B_TYPE", "nav_msgs/msg/Odometry")
+
+#: Probe C: the sim's ROS 1 master (empty = probe C off) and how often to ask about /gazebo.
+GAZEBO_MASTER_URI = os.environ.get("GAZEBO_MASTER_URI", "")
+GAZEBO_NODE = os.environ.get("GAZEBO_NODE", "/gazebo")
+PROBE_C_INTERVAL = float(os.environ.get("PROBE_C_INTERVAL", "15"))
+PROBE_C_TIMEOUT = float(os.environ.get("PROBE_C_TIMEOUT", "3"))
 
 UNIT = os.environ.get("ROSBRIDGE_UNIT", "rosbridge-websocket")
 GUARD_UNIT = os.environ.get("GUARD_UNIT", "ros1-dynamic-bridge")
@@ -205,6 +222,41 @@ async def _probe_round_trip() -> str:
         connection.close()
 
 
+class _TimeoutTransport(xmlrpc.client.Transport):
+    def __init__(self, timeout: float) -> None:
+        super().__init__()
+        self._timeout = timeout
+
+    def make_connection(self, host):
+        connection = super().make_connection(host)
+        connection.timeout = self._timeout
+        return connection
+
+
+def probe_gazebo() -> tuple[bool, int | None, str]:
+    """Probe C: is the gzserver process registered as /gazebo alive? Returns (alive, pid, detail).
+
+    Two calls: the master's lookupNode (where /gazebo is registered) and the node's own getPid.
+    A dead gzserver keeps its registration, so the second call is the one that tells.
+    """
+    caller = "/rosbridge_health_watchdog"
+    try:
+        master = xmlrpc.client.ServerProxy(GAZEBO_MASTER_URI, transport=_TimeoutTransport(PROBE_C_TIMEOUT))
+        code, message, uri = master.lookupNode(caller, GAZEBO_NODE)
+    except Exception as exc:  # noqa: BLE001
+        return False, None, f"master {GAZEBO_MASTER_URI} unreachable: {type(exc).__name__}: {exc}"
+    if code != 1:
+        return False, None, f"{GAZEBO_NODE} not registered: {message}"
+    try:
+        node = xmlrpc.client.ServerProxy(uri, transport=_TimeoutTransport(PROBE_C_TIMEOUT))
+        code, message, pid = node.getPid(caller)
+    except Exception as exc:  # noqa: BLE001
+        return False, None, f"{GAZEBO_NODE} at {uri} does not answer: {type(exc).__name__}: {exc}"
+    if code != 1:
+        return False, None, f"{GAZEBO_NODE} getPid failed: {message}"
+    return True, int(pid), f"{GAZEBO_NODE} pid {pid} at {uri}"
+
+
 def run_probe(loop: asyncio.AbstractEventLoop, coro_factory, timeout: float):
     """Run one probe to completion. Returns (ok, detail)."""
     try:
@@ -266,12 +318,16 @@ def main() -> int:
             "topic": PROBE_B_TOPIC,
         },
         min_restart_interval_s=MIN_RESTART_INTERVAL,
+        probe_c={"interval_s": PROBE_C_INTERVAL, "master": GAZEBO_MASTER_URI or None, "node": GAZEBO_NODE},
     )
 
     now = time.monotonic()
     next_a, next_b, next_summary = now, now + PROBE_B_INTERVAL, now + SUMMARY_INTERVAL
     consecutive = {"A": 0, "B": 0}
-    counts = {"A_run": 0, "A_fail": 0, "B_run": 0, "B_fail": 0}
+    counts = {"A_run": 0, "A_fail": 0, "B_run": 0, "B_fail": 0, "C_run": 0, "C_fail": 0}
+    next_c = now
+    gazebo_alive: bool | None = None  # unknown until the first answer
+    gazebo_pid: int | None = None
     restarts = 0
     last_restart = None  # monotonic seconds
     # Whether the service has actually served since the last restart. It decides which floor
@@ -315,6 +371,22 @@ def main() -> int:
                 record("probe_failure", probe="B", consecutive=consecutive["B"], detail=detail)
                 if consecutive["B"] >= PROBE_B_FAILURES:
                     trigger = trigger or "B"
+
+        if _running and GAZEBO_MASTER_URI and now >= next_c:
+            next_c = now + PROBE_C_INTERVAL
+            counts["C_run"] += 1
+            alive, pid, detail = probe_gazebo()
+            if not alive:
+                counts["C_fail"] += 1
+                if gazebo_alive is not False:
+                    record("gazebo_down", last_pid=gazebo_pid, detail=detail)
+            elif gazebo_alive is False:
+                record("gazebo_up", pid=pid, previous_pid=gazebo_pid, detail=detail)
+            elif gazebo_pid is not None and pid != gazebo_pid:
+                record("gazebo_restarted", pid=pid, previous_pid=gazebo_pid, detail=detail)
+            if alive:
+                gazebo_pid = pid
+            gazebo_alive = alive
 
         if trigger:
             guard_age = guard_unit_age()
@@ -403,8 +475,8 @@ def main() -> int:
 
         if _running and time.monotonic() >= next_summary:
             next_summary = time.monotonic() + SUMMARY_INTERVAL
-            record("summary", restarts_total=restarts, **counts)
-            counts = {"A_run": 0, "A_fail": 0, "B_run": 0, "B_fail": 0}
+            record("summary", restarts_total=restarts, gazebo_alive=gazebo_alive, gazebo_pid=gazebo_pid, **counts)
+            counts = {"A_run": 0, "A_fail": 0, "B_run": 0, "B_fail": 0, "C_run": 0, "C_fail": 0}
 
         if _running:
             time.sleep(TICK)

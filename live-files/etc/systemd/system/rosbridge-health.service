@@ -27,6 +27,10 @@ Environment=PROBE_A_FAILURES=3
 Environment=PROBE_B_INTERVAL=300
 Environment=PROBE_B_TIMEOUT=10
 Environment=PROBE_B_FAILURES=2
+# Probe C (13.11.2026): Gazebo liveness on the sim VM, observation only (gazebo_down / gazebo_up /
+# gazebo_restarted events; never restarts the simulation). 12.11: gzserver segfaulted unnoticed.
+Environment=GAZEBO_MASTER_URI=http://10.25.25.123:11311
+Environment=PROBE_C_INTERVAL=15
 Environment=PROBE_B_TOPIC=/robot/robotnik_base_control/odom
 Environment=PROBE_B_TYPE=nav_msgs/msg/Odometry
 Environment=MIN_RESTART_INTERVAL=600

@@ -133,6 +133,11 @@ parameters, so there is no dead-peer detection to switch on.
 - **Probe B**, every 5 min: subscribe to `/robot/robotnik_base_control/odom`, require a real
   message, unsubscribe, close. Two consecutive failures restart the unit. This catches the other
   failure: connections accepted while nothing flows.
+- **Probe C** (13.11.2026), every 15 s, observation only: ask the sim ROS master
+  (`GAZEBO_MASTER_URI`, http://10.25.25.123:11311) where `/gazebo` is registered and call
+  `getPid` on it (stdlib XML-RPC). A crashed gzserver keeps its registration but refuses the call
+  (12.11: segfault unnoticed). Events `gazebo_down` / `gazebo_up` / `gazebo_restarted`; it never
+  restarts anything.
 - **Restraints:** at most one restart per 600 s, and none within 60 s of `ros1-dynamic-bridge`
   restarting — its restarts destroy the ROS 2 publishers rosbridge has matched, so a rosbridge
   failure in that window is downstream of it, not its own.
